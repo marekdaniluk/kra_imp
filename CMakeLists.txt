@@ -52,6 +52,6 @@ target_link_libraries(kra_imp
 	pugixml
 )
 
-add_subdirectory(externals/pugixml)
-add_subdirectory(externals/zip)
+add_subdirectory(pugixml)
+add_subdirectory(zip)
 add_subdirectory(tests)
