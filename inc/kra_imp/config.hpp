@@ -1,5 +1,5 @@
 /**
- * kraimp - kra file import library
+ * kra_imp - kra file import library
  * --------------------------------------------------------
  * Copyright (C) 2024, by Marek Daniluk (@GypsyMagic)
  * This library is distributed under the MIT License.
@@ -21,3 +21,8 @@
 #else
 	#define KRA_IMP_API
 #endif
+
+#define KRA_IMP_MAJOR 0
+#define KRA_IMP_MINOR 1
+#define KRA_IMP_PATCH 0
+#define KRA_IMP_VERSION ((KRA_IMP_MAJOR << 16) | (KRA_IMP_MINOR << 8) | KRA_IMP_PATCH)
