@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Diractories
+/build/
+/.vscode/
