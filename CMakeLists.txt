@@ -55,3 +55,8 @@ target_link_libraries(kra_imp
 add_subdirectory(pugixml)
 add_subdirectory(zip)
 add_subdirectory(tests)
+
+option(KRA_IMP_BUILD_DOC "Generate documentation with Doxygen for kra_imp library" ON)
+if (KRA_IMP_BUILD_DOC)
+	add_subdirectory(doc)
+endif()
