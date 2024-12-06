@@ -144,7 +144,7 @@ KRA_IMP_API const char* kra_imp_get_layer_directory_name()
 	return KRA_IMP_LAYERS_DIRECTORY_NAME;
 }
 
-KRA_IMP_API unsigned char kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc)
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc)
 {
 	if (xml_buffer == nullptr || main_doc == nullptr)
 	{
@@ -191,7 +191,7 @@ KRA_IMP_API unsigned char kra_imp_read_main_doc(const char* xml_buffer, const un
 	return KRA_IMP_SUCCESS;
 }
 
-KRA_IMP_API unsigned char kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long  xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer)
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long  xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer)
 {
 	if (xml_buffer == nullptr || image_layer == nullptr)
 	{
@@ -274,7 +274,7 @@ KRA_IMP_API unsigned long long kra_imp_get_image_key_frames_count(const char* xm
 	return key_frame_nodes.size();
 }
 
-KRA_IMP_API unsigned char kra_imp_read_image_key_frame(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned long long key_frame_index, kra_imp_image_key_frame_t* image_key_frame)
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_key_frame(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned long long key_frame_index, kra_imp_image_key_frame_t* image_key_frame)
 {
 	if (xml_buffer == nullptr || image_key_frame == nullptr)
 	{
@@ -306,7 +306,7 @@ KRA_IMP_API unsigned char kra_imp_read_image_key_frame(const char* xml_buffer, c
 	return KRA_IMP_SUCCESS;
 }
 
-KRA_IMP_API unsigned char kra_imp_read_layer_data_header(const char* buffer, const unsigned long long buffer_size, kra_imp_layer_data_header_t* layer_data_header)
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buffer, const unsigned long long buffer_size, kra_imp_layer_data_header_t* layer_data_header)
 {
 	static constexpr const std::array<std::string_view, 5> KRA_IMP_HEADER
 	{
@@ -385,7 +385,7 @@ KRA_IMP_API unsigned char kra_imp_read_layer_data_header(const char* buffer, con
 	return KRA_IMP_SUCCESS;
 }
 
-KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, const unsigned long long layer_data_tile_index, char* output, const unsigned long long output_size, int* x_offset, int* y_offset)
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, const unsigned long long layer_data_tile_index, char* output, const unsigned long long output_size, int* x_offset, int* y_offset)
 {
 	unsigned long long start_position = 0;
 	unsigned long long end_position = 1;
