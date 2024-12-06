@@ -5,17 +5,52 @@
  * This library is distributed under the MIT License.
  */
 #include <kra_imp/kra_imp.hpp>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <format>
-#include <ranges>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
+TEST_CASE("Read empty main_doc.xml", "[main_doc]")
+{
+	constexpr const std::string_view MAIN_DOC_XML = "";
+
+	kra_imp_main_doc_t main_doc;
+	kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
+	REQUIRE(result == KRA_IMP_FAIL);
+}
+
+TEST_CASE("Read invalid main_doc.xml", "[main_doc]")
+{
+	constexpr const std::string_view MAIN_DOC_XML = R"(
+	<?xml version="1.0" encoding="UTF-8"?
+	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'
+	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita"
+	</DOC>
+	)";
+
+	kra_imp_main_doc_t main_doc;
+	kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
+	REQUIRE(result == KRA_IMP_FAIL);
+}
+
+TEST_CASE("Read main_doc.xml with no IMAGE node", "[main_doc]")
+{
+	constexpr const std::string_view MAIN_DOC_XML = R"(
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'>
+	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
+	</DOC>
+	)";
+
+	kra_imp_main_doc_t main_doc;
+	kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
+	REQUIRE(result == KRA_IMP_SUCCESS);
+	REQUIRE(std::strlen(main_doc._color_space) == 0);
+	REQUIRE(std::strlen(main_doc._image_name) == 0);
+	REQUIRE(main_doc._layers_count == 0);
+	REQUIRE(main_doc._height == 0);
+	REQUIRE(main_doc._width == 0);
+}
+
+/*
 void ReadFile(const char* filename, std::vector<char>& data)
 {
 	std::ifstream fin(filename, std::ios::binary);
@@ -152,3 +187,4 @@ int main()
 	const std::chrono::microseconds duration = duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start);
 	std::cout << std::format("{} us", duration.count()) << std::endl;
 }
+*/
