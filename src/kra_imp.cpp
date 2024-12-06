@@ -10,9 +10,7 @@
 #include <pugixml.hpp>
 #include <array>
 #include <charconv>
-#include <cstring>
 #include <functional>
-#include <string_view>
 
 static constexpr const char* KRA_IMP_MAIN_DOC_FILE_NAME{ "maindoc.xml" };
 static constexpr const char* KRA_IMP_LAYERS_DIRECTORY_NAME{ "layers" };
@@ -213,7 +211,7 @@ KRA_IMP_API unsigned char kra_imp_read_image_layer(const char* xml_buffer, const
 
 	const pugi::xpath_node node = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
 	const pugi::xpath_node_set layer_nodes = main_doc_xml_document.select_nodes(KRA_IMP_LAYER_NODES);
-	std::function<void(const pugi::xml_node&, unsigned long long&, const unsigned long long)> layers_counter_recursive;
+	std::function<bool(const pugi::xml_node&, unsigned long long&, const unsigned long long)> layers_counter_recursive;
 	layers_counter_recursive = [&layers_counter_recursive, layer_index, image_layer](const pugi::xml_node& xml_node, unsigned long long& current_layer_index, const unsigned long long parent_index)
 	{
 		const pugi::char_t* node_type_attribute = xml_node.attribute(KRA_IMP_NODE_TYPE_ATTRIBUTE).value();
@@ -236,7 +234,10 @@ KRA_IMP_API unsigned char kra_imp_read_image_layer(const char* xml_buffer, const
 			const pugi::xpath_node_set layer_nodes = xml_node.select_nodes(KRA_IMP_INNER_LAYER_NODES);
 			for (pugi::xpath_node_set::const_iterator it = layer_nodes.begin(); it != layer_nodes.end(); ++it)
 			{
-				layers_counter_recursive(it->node(), current_layer_index, current_parent_index);
+				if (layers_counter_recursive(it->node(), current_layer_index, current_parent_index))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -246,10 +247,13 @@ KRA_IMP_API unsigned char kra_imp_read_image_layer(const char* xml_buffer, const
 	unsigned long long current_layer_index = 0;
 	for (pugi::xpath_node_set::const_iterator it = layer_nodes.begin(); it != layer_nodes.end(); ++it)
 	{
-		layers_counter_recursive(it->node(), current_layer_index, ULONG_MAX);
+		if (layers_counter_recursive(it->node(), current_layer_index, ULONG_MAX))
+		{
+			return KRA_IMP_SUCCESS;
+		}
 	}
 
-	return KRA_IMP_SUCCESS;
+	return KRA_IMP_FAIL;
 }
 
 KRA_IMP_API unsigned long long kra_imp_get_image_key_frames_count(const char* xml_buffer, const unsigned long long xml_buffer_size)
@@ -313,6 +317,7 @@ KRA_IMP_API unsigned char kra_imp_read_layer_data_header(const char* buffer, con
 		"DATA "
 	};
 
+	layer_data_header->_header_size = 0;
 	for (unsigned int i = 0; i < KRA_IMP_HEADER.size(); ++i)
 	{
 		const std::string_view current_header(buffer + layer_data_header->_header_size, KRA_IMP_HEADER[i].size());
@@ -382,8 +387,8 @@ KRA_IMP_API unsigned char kra_imp_read_layer_data_header(const char* buffer, con
 
 KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, const unsigned long long layer_data_tile_index, char* output, const unsigned long long output_size, int* x_offset, int* y_offset)
 {
-	unsigned long long start_position = 0;//layer_data_header->_header_size;
-	unsigned long long end_position = start_position + 1;
+	unsigned long long start_position = 0;
+	unsigned long long end_position = 1;
 
 	auto separator_splitter = [input, input_size](unsigned long long* end_position)
 	{
@@ -398,7 +403,8 @@ KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(const char* input, const 
 
 		return false;
 	};
-	for (unsigned long long i = 0; i < 0/*layer_data_header->_layer_datas_count*/; ++i)
+	unsigned long long current_index = 0;
+	while(end_position < input_size)
 	{
 		if (!separator_splitter(&end_position))
 		{
@@ -453,7 +459,7 @@ KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(const char* input, const 
 
 		start_position = end_position + 1;
 		end_position = start_position + 1;
-		if (i == layer_data_tile_index)
+		if (current_index == layer_data_tile_index)
 		{
 			if (KRA_IMP_COMPRESSION_FLAG == input[start_position])
 			{
@@ -471,6 +477,7 @@ KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(const char* input, const 
 		}
 		start_position += compressed_size;
 		end_position = start_position + 1;
+		++current_index;
 	}
 	return KRA_IMP_FAIL;
 }

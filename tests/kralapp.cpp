@@ -52,7 +52,7 @@ void read_layer(const std::string_view filename, const std::vector<char>& layerB
 	{
 		STile& tile = tiles[i];
 		tile.tileBuffer.resize(tile_data_size);
-		kra_imp_read_layer_data_tile(&header, i, tile.tileBuffer.data(), tile_data_size, &tile.xOffset, &tile.yOffset);
+		kra_imp_read_layer_data_tile(layerBuffer.data() + header._header_size, layerBuffer.size() - header._header_size, i, tile.tileBuffer.data(), tile_data_size, &tile.xOffset, &tile.yOffset);
 		if (i == 0 || Top > tile.yOffset)
 		{
 			Top = tile.yOffset;
@@ -92,12 +92,12 @@ void read_layer(const std::string_view filename, const std::vector<char>& layerB
 	//fout.close();
 }
 
-static constexpr const std::string_view ARCHIVE_PATH{ "C:\\Users\\marek\\source\\repos\\kral\\examples\\example_RGBA.kra" };
+static constexpr const std::string_view ARCHIVE_PATH{ "C:\\Users\\marek\\source\\repos\\kra_imp\\test\\example_RGBA.kra" };
 
 int main()
 {
 	std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now(); int errorCode = 0;
-	//for (int i = 0; i < 200; ++i)
+	for (int i = 0; i < 200; ++i)
 	{
 		std::vector<char> zipfile;
 		ReadFile(ARCHIVE_PATH.data(), zipfile);

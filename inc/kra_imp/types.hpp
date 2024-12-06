@@ -128,7 +128,7 @@ extern "C" {
 	 * @details
 	 * This structure stores information about a single keyframe in an animated image within a KRA archive.
 	 */
-	struct KRA_IMP_API	kra_imp_image_key_frame_t
+	struct KRA_IMP_API kra_imp_image_key_frame_t
 	{
 		int _x;												/**< Horizontal position of the keyframe in the image's coordinate space. */
 		int _y;												/**< Vertical position of the keyframe in the image's coordinate space. */
