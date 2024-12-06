@@ -90,258 +90,105 @@ extern "C" {
 	 * @brief Gets the name of the main document in the archive.
 	 * 
 	 * @details
-	 * For the current KRA format, the main document is expected to have the name "maindoc.xml".
+	 * For the current KRA format, the main document is expected to have the name `maindoc.xml`.
 	 * 
 	 * @return Name of the main document file as a string.
 	 */
 	KRA_IMP_API const char* kra_imp_get_main_doc_name();
 	/**
 	 * @ingroup kra_imp
-	 * 
-	 * @brief Reads the main document XML from a buffer.
-	 * 
+	 *
+	 * @brief Retrieves the name of the directory where layer files are stored.
+	 *
 	 * @details
-	 * Parses the main document XML and caches relevant information in the archive.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * @param[in] file_buffer Buffer containing the main document XML data.
-	 * @param[in] file_buffer_size Size of the buffer in bytes.
-	 * 
-	 * @return KRA_IMP_SUCCESS on success, or KRA_IMP_FAIL on failure.
+	 * Returns the name of the directory containing the layer files in the current KRA format.
+	 * By default, this directory is named "layers." To construct the full file path for a layer,
+	 * the format follows: `IMAGE_NAME/LAYERS_DIRECTORY_NAME/FILENAME`. This function provides the
+	 * directory name portion of that path.
+	 *
+	 * @return Name of the directory for layer files as a string, typically "layers".
+	 *
+	 * @note This function does not validate or construct the full file path. Instead, it only 
+	 * provides the directory name, which must be combined with the image name and filename 
+	 * to create the complete path.
 	 */
-	KRA_IMP_API unsigned char kra_imp_read_main_doc(kra_imp_archive_t* archive, const char* file_buffer, const unsigned long long file_buffer_size);
+	KRA_IMP_API const char* kra_imp_get_layer_directory_name();
 	/**
 	 * @ingroup kra_imp
 	 * 
-	 * @brief Gets the internal image name from the main document.
+	 * @brief Reads and parses the main document from the provided XML buffer.
 	 * 
 	 * @details
-	 * Requires `kra_imp_read_main_doc` to be called beforehand.
+	 * Extracts and processes the main document (`maindoc.xml`) from the given XML buffer, storing the
+	 * parsed information in the provided `kra_imp_main_doc_t` structure. The main document contains
+	 * essential metadata and structure about the image, including its layers, dimensions, and other properties.
 	 * 
-	 * @param[in] archive Pointer to the opened archive.
+	 * @param[in] xml_buffer Pointer to the memory buffer containing the XML data.
+	 * @param[in] xml_buffer_size Size of the XML buffer in bytes.
+	 * @param[out] main_doc Pointer to the structure where the parsed main document data will be stored.
 	 * 
-	 * @return Image name as a string on success, or null/empty string on failure.
+	 * @return KRA_IMP_SUCCESS if the main document was successfully read and parsed, or KRA_IMP_FAIL on failure.
 	 */
-	KRA_IMP_API const char* kra_imp_get_image_name(kra_imp_archive_t* archive);
+	KRA_IMP_API unsigned char kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long  xml_buffer_size, kra_imp_main_doc_t* main_doc);
 	/**
 	 * @ingroup kra_imp
 	 * 
-	 * @brief Gets the color space name of the image.
+	 * @brief Reads and parses a specific layer from the provided XML buffer.
 	 * 
 	 * @details
-	 * Requires `kra_imp_read_main_doc` to be called beforehand.
+	 * Extracts information about a specific layer in the image by parsing the XML buffer.
+	 * The layer is identified by its index, and the resulting data is stored in the provided
+	 * `kra_imp_image_layer_t` structure. This function is used to reconstruct individual layers
+	 * from the hierarchical layer structure stored in KRA archives.
 	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Color space name as a string on success, or null/empty string on failure.
-	 */
-	KRA_IMP_API const char* kra_imp_get_image_color_space_name(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the height of the image.
-	 * 
-	 * @details
-	 * Requires `kra_imp_read_main_doc` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Image height in pixels on success, or 0 on failure.
-	 */
-	KRA_IMP_API unsigned long long kra_imp_get_image_height(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the width of the image.
-	 * 
-	 * @details
-	 * Requires `kra_imp_read_main_doc` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Image width in pixels on success, or 0 on failure.
-	 */
-	KRA_IMP_API unsigned long long kra_imp_get_image_width(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the number of layers in the image.
-	 * 
-	 * @details
-	 * Requires `kra_imp_read_main_doc` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Number of layers in the image on success, or 0 on failure.
-	 */
-	KRA_IMP_API unsigned long long kra_imp_get_image_layers_count(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	* @brief Reads image layer under layer_index.
-	 * 
-	 * @details
-	 * Reads image layer and caches it in the archive under the index. The layers in a KRA file are organized
-	 * as a tree structure, where each layer may have a parent layer. This tree structure is flattened,
-	 * and the hierarchical relationships can be reconstructed by using the parent indices of the layers.
-	 * Requires `kra_imp_read_image_layer` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
+	 * @param[in] xml_buffer Pointer to the memory buffer containing the XML data.
+	 * @param[in] xml_buffer_size Size of the XML buffer in bytes.
 	 * @param[in] layer_index Index of the layer to read.
+	 * @param[out] image_layer Pointer to the structure where the parsed layer data will be stored.
 	 * 
-	 * @return KRA_IMP_SUCCESS if the layer was read and cached successfully, or KRA_IMP_FAIL on failure.
+	 * @return KRA_IMP_SUCCESS if the layer was successfully read and parsed, or KRA_IMP_FAIL on failure.
 	 */
-	KRA_IMP_API unsigned char kra_imp_read_image_layer(kra_imp_archive_t* archive, const unsigned long long layer_index);
+	KRA_IMP_API unsigned char kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long  xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer);
 	/**
 	 * @ingroup kra_imp
 	 * 
-	 * @brief Gets the type of a cached image layer.
+	 * @brief Retrieves the total number of key frames from the provided XML buffer.
 	 * 
 	 * @details
-	 * Requires `kra_imp_read_image_layer` to be called beforehand.
+	 * Parses the XML buffer to determine the total number of key frames in the image's animation timeline. 
+	 * This function is useful for iterating through key frames when working with animation data in KRA archives.
 	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Layer type as an enumeration value.
-	 */
-	KRA_IMP_API unsigned char kra_imp_get_image_layer_type(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the parent index of a cached image layer.
-	 * 
-	 * @details
-	 * Layer indices are arranged top to bottom in a flattened structure. This function retrieves the parent index
-	 * of the layer. Requires `kra_imp_read_image_layer` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Parent index on success, or ULONG_MAX if the layer has no parent.
-	 */
-	KRA_IMP_API unsigned long long kra_imp_get_image_layer_parent_index(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the name of a cached image layer.
-	 * 
-	 * @details
-	 * Requires `kra_imp_read_image_layer` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Layer name as a string on success, or null/empty string on failure.
-	 */
-	KRA_IMP_API const char* kra_imp_get_image_layer_name(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the file name of a cached image layer.
-	 * 
-	 * @details
-	 * Requires `kra_imp_read_image_layer` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Layer file name as a string on success, or null/empty string on failure.
-	 */
-	KRA_IMP_API const char* kra_imp_get_image_layer_file_name(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Gets the key frame file name of a cached image layer.
-	 * 
-	 * @details
-	 * Requires `kra_imp_read_image_layer` to be called beforehand. The presence of a key frame file
-	 * name indicates that the layer uses animation.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * 
-	 * @return Key frame file name as a string on success, or null/empty string on failure.
-	 */
-	KRA_IMP_API const char* kra_imp_get_image_layer_key_frame_file_name(kra_imp_archive_t* archive);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Constructs the file path for a layer file.
-	 * 
-	 * @details
-	 * Constructs the full file path for a layer file within an archive using the provided image and file names.
-	 * The constructed path may exceed the size of `layer_path_buffer`. In such cases, the function will fail.
-	 * Ensure that `layer_path_buffer` is large enough to accommodate the constructed path to avoid errors.
-	 * 
-	 * @param[out] layer_path_buffer Buffer to store the constructed file path.
-	 * @param[in] layer_path_buffer_size Size of the buffer in bytes.
-	 * @param[in] image_name Name of the image containing the layer.
-	 * @param[in] file_name Name of the layer file.
-	 * 
-	 * @return KRA_IMP_SUCCESS on success, or KRA_IMP_FAIL on failure.
-	 */
-	KRA_IMP_API unsigned char kra_imp_get_layer_file_path(char* layer_path_buffer, const unsigned char layer_path_buffer_size, const char* image_name, const char* file_name);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Reads all key frames from the provided buffer and caches them in the archive.
-	 * 
-	 * @details
-	 * Parses the key frames XML and caches relevant information in the archive.
-	 * This function is necessary for accessing key frame-specific data or performing subsequent operations on key frames.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
-	 * @param[in] buffer Memory buffer containing the key frame data.
-	 * @param[in] buffer_size Size of the buffer in bytes.
-	 * 
-	 * @return KRA_IMP_SUCCESS if the key frames were successfully read and cached, or KRA_IMP_FAIL on failure.
-	 */
-	KRA_IMP_API unsigned char kra_imp_read_image_key_frames(kra_imp_archive_t* archive, const char* buffer, const unsigned long long buffer_size);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Retrieves the total number of key frames for the cached key frames file.
-	 * 
-	 * @details
-	 * Returns the number of key frames available, as read and cached in the archive.
-	 * Requires `kra_imp_read_image_key_frames` to be called beforehand.
-	 * 
-	 * @param[in] archive Pointer to the opened archive.
+	 * @param[in] xml_buffer Pointer to the memory buffer containing the XML data.
+	 * @param[in] xml_buffer_size Size of the XML buffer in bytes.
 	 * 
 	 * @return The number of key frames on success, or 0 if no key frames are available or on failure.
 	 */
-	KRA_IMP_API unsigned long long kra_imp_get_image_key_frames_count(kra_imp_archive_t* archive);
+	KRA_IMP_API unsigned long long kra_imp_get_image_key_frames_count(const char* xml_buffer, const unsigned long long xml_buffer_size);
 	/**
 	 * @ingroup kra_imp
 	 * 
-	 * @brief Reads a specific key frame by index and caches its data in the archive.
+	 * @brief Reads a specific key frame from the provided XML buffer.
 	 * 
 	 * @details
-	 * Reads a key frame by its index from the archive and caches its data.
-	 * Requires `kra_imp_read_image_key_frames` to be called beforehand.
+	 * Parses and extracts information about a specific key frame from the XML buffer of an image.
+	 * The key frame is identified by its index, and the resulting data is stored in the provided
+	 * `kra_imp_image_key_frame_t` structure.
 	 * 
-	 * @param[in] archive Pointer to the opened archive.
+	 * @param[in] xml_buffer Pointer to the memory buffer containing the XML data.
+	 * @param[in] xml_buffer_size Size of the XML buffer in bytes.
 	 * @param[in] key_frame_index Index of the key frame to read.
+	 * @param[out] image_key_frame Pointer to the structure where the parsed key frame data will be stored.
 	 * 
-	 * @return KRA_IMP_SUCCESS if the key frame was successfully read and cached, or KRA_IMP_FAIL on failure.
+	 * @return KRA_IMP_SUCCESS if the key frame was successfully read, or KRA_IMP_FAIL on failure.
 	 */
-	KRA_IMP_API unsigned char kra_imp_read_image_key_frame(kra_imp_archive_t* archive, const unsigned long long key_frame_index);
-	/**
-	 * @ingroup kra_imp
-	 * 
-	 * @brief Retrieves the name of the currently cached key frame.
-	 * 
-	 * @details
-	 * Provides the name of the key frame cached in the archive. Requires `kra_imp_read_image_key_frames` to be called beforehand.
-	 * 
-	 * @param[in] archive Archive containing the cached key frame metadata.
-	 * 
-	 * @return Name of the key frame on success, or null/empty string on failure.
-	 */
-	KRA_IMP_API const char* kra_imp_get_image_key_frame_name(kra_imp_archive_t* archive);
+	KRA_IMP_API unsigned char kra_imp_read_image_key_frame(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned long long key_frame_index, kra_imp_image_key_frame_t* image_key_frame);
 	/**
 	 * @ingroup kra_imp
 	 * 
 	 * @brief Reads and parses the header data of an layer data.
 	 * 
 	 * @details
-	 * Parses the header of a layer data from the provided buffer and populates the `layer_data_header` structure.
+	 * Parses the header of a layer data from the provided buffer and populates the `kra_imp_layer_data_header_t` structure.
 	 * The header contains data necessary for further processing.
 	 * 
 	 * @param[in] buffer Memory buffer containing the layer data.
@@ -369,7 +216,7 @@ extern "C" {
 	 * 
 	 * @return KRA_IMP_SUCCESS if the tile was successfully read, or KRA_IMP_FAIL on failure.
 	 */
-	KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(kra_imp_layer_data_header_t* layer_data_header, const unsigned long long layer_data_tile_index, char* buffer, const unsigned long long buffer_size, int* x_offset, int* y_offset);
+	KRA_IMP_API unsigned char kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, const unsigned long long layer_data_tile_index, char* output, const unsigned long long output_size, int* x_offset, int* y_offset);
 	/**
 	 * @ingroup kra_imp
 	 * 
