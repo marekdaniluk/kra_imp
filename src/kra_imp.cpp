@@ -159,12 +159,18 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
 	}
 
 	const pugi::xpath_node node = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
+	const pugi::xml_node image_node = node.node();
+	if (image_node.empty())
+	{
+		return KRA_IMP_FAIL;
+	}
+
 	std::memset(main_doc->_image_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
-	std::strcpy(main_doc->_image_name, node.node().attribute(KRA_IMP_NAME_ATTRIBUTE).value());
+	std::strcpy(main_doc->_image_name, image_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
 	std::memset(main_doc->_color_space, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
-	std::strcpy(main_doc->_color_space, node.node().attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value());
-	main_doc->_width = node.node().attribute(KRA_IMP_WIDTH_ATTRIBUTE).as_ullong();
-	main_doc->_height = node.node().attribute(KRA_IMP_HEIGHT_ATTRIBUTE).as_ullong();
+	std::strcpy(main_doc->_color_space, image_node.attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value());
+	main_doc->_width = image_node.attribute(KRA_IMP_WIDTH_ATTRIBUTE).as_ullong();
+	main_doc->_height = image_node.attribute(KRA_IMP_HEIGHT_ATTRIBUTE).as_ullong();
 
 	const pugi::xpath_node_set layer_nodes = main_doc_xml_document.select_nodes(KRA_IMP_LAYER_NODES);
 	main_doc->_layers_count = 0;
@@ -191,7 +197,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
 	return KRA_IMP_SUCCESS;
 }
 
-KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long  xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer)
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer)
 {
 	if (xml_buffer == nullptr || image_layer == nullptr)
 	{
@@ -206,24 +212,24 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer
 	}
 
 	std::memset(image_layer->_file_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
-	std::memset(image_layer->_frame_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
+	std::memset(image_layer->_frame_file_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
 	std::memset(image_layer->_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
 
 	const pugi::xpath_node node = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
 	const pugi::xpath_node_set layer_nodes = main_doc_xml_document.select_nodes(KRA_IMP_LAYER_NODES);
 	std::function<bool(const pugi::xml_node&, unsigned long long&, const unsigned long long)> layers_counter_recursive;
-	layers_counter_recursive = [&layers_counter_recursive, layer_index, image_layer](const pugi::xml_node& xml_node, unsigned long long& current_layer_index, const unsigned long long parent_index)
+	layers_counter_recursive = [&layers_counter_recursive, layer_index, image_layer](const pugi::xml_node& node, unsigned long long& current_layer_index, const unsigned long long parent_index)
 	{
-		const pugi::char_t* node_type_attribute = xml_node.attribute(KRA_IMP_NODE_TYPE_ATTRIBUTE).value();
+		const pugi::char_t* node_type_attribute = node.attribute(KRA_IMP_NODE_TYPE_ATTRIBUTE).value();
 		kra_imp_layer_type_e current_layer_type = kra_imp_to_layer_type(std::string_view(node_type_attribute));
 		if (current_layer_index == layer_index)
 		{
 			image_layer->_index = layer_index;
 			image_layer->_type = current_layer_type;
 			image_layer->_parent_index = parent_index;
-			std::strcpy(image_layer->_file_name, xml_node.attribute(KRA_IMP_FILE_NAME_ATTRIBUTE).value());
-			std::strcpy(image_layer->_name, xml_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
-			std::strcpy(image_layer->_frame_name, xml_node.attribute(KRA_IMP_KEY_FRAMES_ATTRIBUTE).value());
+			std::strcpy(image_layer->_file_name, node.attribute(KRA_IMP_FILE_NAME_ATTRIBUTE).value());
+			std::strcpy(image_layer->_name, node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
+			std::strcpy(image_layer->_frame_file_name, node.attribute(KRA_IMP_KEY_FRAMES_ATTRIBUTE).value());
 			return true;
 		}
 
@@ -231,7 +237,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer
 		++current_layer_index;
 		if (current_layer_type == KRA_IMP_GROUP_LAYER_TYPE)
 		{
-			const pugi::xpath_node_set layer_nodes = xml_node.select_nodes(KRA_IMP_INNER_LAYER_NODES);
+			const pugi::xpath_node_set layer_nodes = node.select_nodes(KRA_IMP_INNER_LAYER_NODES);
 			for (pugi::xpath_node_set::const_iterator it = layer_nodes.begin(); it != layer_nodes.end(); ++it)
 			{
 				if (layers_counter_recursive(it->node(), current_layer_index, current_parent_index))
@@ -247,7 +253,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer
 	unsigned long long current_layer_index = 0;
 	for (pugi::xpath_node_set::const_iterator it = layer_nodes.begin(); it != layer_nodes.end(); ++it)
 	{
-		if (layers_counter_recursive(it->node(), current_layer_index, ULONG_MAX))
+		if (layers_counter_recursive(it->node(), current_layer_index, ULLONG_MAX))
 		{
 			return KRA_IMP_SUCCESS;
 		}

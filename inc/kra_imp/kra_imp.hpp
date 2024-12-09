@@ -129,7 +129,7 @@ extern "C" {
 	 * 
 	 * @return KRA_IMP_SUCCESS if the main document was successfully read and parsed, or KRA_IMP_FAIL on failure.
 	 */
-	KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long  xml_buffer_size, kra_imp_main_doc_t* main_doc);
+	KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc);
 	/**
 	 * @ingroup kra_imp
 	 * 
@@ -148,7 +148,7 @@ extern "C" {
 	 * 
 	 * @return KRA_IMP_SUCCESS if the layer was successfully read and parsed, or KRA_IMP_FAIL on failure.
 	 */
-	KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long  xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer);
+	KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned long long layer_index, kra_imp_image_layer_t* image_layer);
 	/**
 	 * @ingroup kra_imp
 	 * 

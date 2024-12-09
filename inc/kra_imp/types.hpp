@@ -93,7 +93,7 @@ extern "C" {
 	struct KRA_IMP_API kra_imp_main_doc_t
 	{
 		char _image_name[KRA_IMP_MAX_STRING_LENGTH];		/**< The name of the image as specified in the main document. */
-		char _color_space[KRA_IMP_MAX_STRING_LENGTH];		/**< The color space used by the image (e.g., RGB, CMYK). */
+		char _color_space[KRA_IMP_MAX_STRING_LENGTH];		/**< The color space used by the image (e.g., RGBA, CMYK). */
 		unsigned long long _layers_count;					/**< The total number of layers in the image. */
 		unsigned long long _height;							/**< The height of the image in pixels. */
 		unsigned long long _width;							/**< The width of the image in pixels. */
@@ -113,7 +113,7 @@ extern "C" {
 	{
 		char _name[KRA_IMP_MAX_STRING_LENGTH];				/**< The name of the layer. */
 		char _file_name[KRA_IMP_MAX_STRING_LENGTH];			/**< The file name associated with the layer's content. */
-		char _frame_name[KRA_IMP_MAX_STRING_LENGTH];		/**< The file name of the keyframe associated with the layer, if applicable. */
+		char _frame_file_name[KRA_IMP_MAX_STRING_LENGTH];	/**< The file name of the keyframe associated with the layer, if applicable. */
 		kra_imp_layer_type_e _type;							/**< The type of the layer, defined by `kra_imp_layer_type_e`. */
 		unsigned long long _index;							/**< The index of the layer in the flattened layer structure. Defaults to `ULLONG_MAX` if undefined. */
 		unsigned long long _parent_index;					/**< The index of the parent layer, or `ULLONG_MAX` if the layer has no parent. */
