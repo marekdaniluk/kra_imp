@@ -1,0 +1,17 @@
+---
+BreakBeforeBraces: Allman
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+BinPackParameters: true
+BinPackArguments: true
+ColumnLimit: 180
+AllowShortFunctionsOnASingleLine: None
+BreakArrays: true
+Cpp11BracedListStyle: false
+AlignArrayOfStructures: Left
+PackConstructorInitializers: Never
+ReferenceAlignment: Left
+PointerAlignment: Left
+IndentPPDirectives: AfterHash
+---

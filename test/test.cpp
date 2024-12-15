@@ -67,11 +67,11 @@ TEST_CASE("Read main_doc.xml with no layers node", "[main_doc]")
 	kra_imp_main_doc_t main_doc;
 	kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
 	REQUIRE(result == KRA_IMP_SUCCESS);
-	REQUIRE(main_doc._width == 256);
-	REQUIRE(main_doc._height == 128);
+	REQUIRE(main_doc._width == 256U);
+	REQUIRE(main_doc._height == 128U);
 	REQUIRE(std::strcmp(main_doc._image_name, "Example") == 0);
 	REQUIRE(std::strcmp(main_doc._color_space, "RGBA") == 0);
-	REQUIRE(main_doc._layers_count == 0);
+	REQUIRE(main_doc._layers_count == 0U);
 }
 
 TEST_CASE("Read main_doc.xml with a layer", "[main_doc]")
@@ -91,17 +91,17 @@ TEST_CASE("Read main_doc.xml with a layer", "[main_doc]")
 	kra_imp_main_doc_t main_doc;
 	kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
 	REQUIRE(result == KRA_IMP_SUCCESS);
-	REQUIRE(main_doc._width == 128);
-	REQUIRE(main_doc._height == 128);
+	REQUIRE(main_doc._width == 128U);
+	REQUIRE(main_doc._height == 128U);
 	REQUIRE(std::strcmp(main_doc._image_name, "Example") == 0);
 	REQUIRE(std::strcmp(main_doc._color_space, "RGBA") == 0);
-	REQUIRE(main_doc._layers_count == 1);
+	REQUIRE(main_doc._layers_count == 1U);
 }
 
 TEST_CASE("Null main_doc.xml buffer", "[image_layer]")
 {
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(nullptr, 0ULL, 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(nullptr, 0ULL, 0U, &image_layer);
 	REQUIRE(result == KRA_IMP_FAIL);
 }
 
@@ -110,7 +110,7 @@ TEST_CASE("Read empty main_doc.xml", "[image_layer]")
 	constexpr const std::string_view MAIN_DOC_XML = "";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
 	REQUIRE(result == KRA_IMP_FAIL);
 }
 
@@ -124,7 +124,7 @@ TEST_CASE("Read invalid main_doc.xml", "[image_layer]")
 	)";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
 	REQUIRE(result == KRA_IMP_FAIL);
 }
 
@@ -138,7 +138,7 @@ TEST_CASE("Read main_doc.xml with no IMAGE node", "[image_layer]")
 	)";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
 	//KRA_IMP_MISSING_IMAGE_INFO
 	REQUIRE(result == KRA_IMP_FAIL);
 }
@@ -155,7 +155,7 @@ TEST_CASE("Read main_doc.xml with no layers node", "[image_layer]")
 	)";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
 	REQUIRE(result == KRA_IMP_FAIL);
 }
 
@@ -174,11 +174,10 @@ TEST_CASE("Read main_doc.xml with a layer", "[image_layer]")
 	)";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
 	REQUIRE(result == KRA_IMP_SUCCESS);
 	REQUIRE(image_layer._type == KRA_IMP_PAINT_LAYER_TYPE);
-	REQUIRE(image_layer._parent_index == ULLONG_MAX);
-	REQUIRE(image_layer._index == 0ULL);
+	REQUIRE(image_layer._parent_index == -1U);
 	REQUIRE(std::strcmp(image_layer._file_name, "layer1") == 0);
 	REQUIRE(std::strcmp(image_layer._frame_file_name, "") == 0);
 	REQUIRE(std::strcmp(image_layer._name, "layer_1") == 0);
@@ -199,7 +198,7 @@ TEST_CASE("Read main_doc.xml with a wrong layer index", "[image_layer]")
 	)";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 1ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 1U, &image_layer);
 	//KRA_IMP_OUT_OF_RANGE
 	REQUIRE(result == KRA_IMP_FAIL);
 }
@@ -223,16 +222,14 @@ TEST_CASE("Read main_doc.xml with a grouped layers", "[image_layer]")
 	)";
 
 	kra_imp_image_layer_t image_layer;
-	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0ULL, &image_layer);
+	kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
 	REQUIRE(result == KRA_IMP_SUCCESS);
 	REQUIRE(image_layer._type == KRA_IMP_GROUP_LAYER_TYPE);
-	REQUIRE(image_layer._parent_index == ULLONG_MAX);
-	REQUIRE(image_layer._index == 0);
-	result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 1ULL, &image_layer);
+	REQUIRE(image_layer._parent_index == -1L);
+	result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 1U, &image_layer);
 	REQUIRE(result == KRA_IMP_SUCCESS);
 	REQUIRE(image_layer._type == KRA_IMP_PAINT_LAYER_TYPE);
-	REQUIRE(image_layer._parent_index == 0ULL);
-	REQUIRE(image_layer._index == 1ULL);
+	REQUIRE(image_layer._parent_index == 0L);
 	REQUIRE(std::strcmp(image_layer._file_name, "layer2") == 0);
 	REQUIRE(std::strcmp(image_layer._frame_file_name, "") == 0);
 	REQUIRE(std::strcmp(image_layer._name, "sublayer") == 0);
