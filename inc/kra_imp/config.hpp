@@ -7,19 +7,19 @@
 #pragma once
 
 #ifndef KRA_IMP_STATIC
-	#ifdef _WIN32
-		#ifdef kra_imp_EXPORTS
-			#define KRA_IMP_API __declspec(dllexport)
-		#else
-			#define KRA_IMP_API __declspec(dllimport)
-		#endif
-	#elif __GNUC__ >= 4
-		#define KRA_IMP_API __attribute__((visibility("default")))
-	#else
-		#define KRA_IMP_API
-	#endif
+#    ifdef _WIN32
+#        ifdef kra_imp_EXPORTS
+#            define KRA_IMP_API __declspec(dllexport)
+#        else
+#            define KRA_IMP_API __declspec(dllimport)
+#        endif
+#    elif __GNUC__ >= 4
+#        define KRA_IMP_API __attribute__((visibility("default")))
+#    else
+#        define KRA_IMP_API
+#    endif
 #else
-	#define KRA_IMP_API
+#    define KRA_IMP_API
 #endif
 
 #define KRA_IMP_MAJOR 0
