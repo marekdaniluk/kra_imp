@@ -6,7 +6,6 @@
  */
 #include <kra_imp/kra_imp.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <format>
 
 TEST_CASE("Null main_doc.xml buffer", "[main_doc]")
 {
