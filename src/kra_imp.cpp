@@ -43,7 +43,7 @@ struct kra_imp_archive_t
     zip_t* _archive{ nullptr };
 };
 
-kra_imp_layer_type_e kra_imp_to_layer_type(const std::string_view string)
+kra_imp_layer_type_e to_layer_type(const std::string_view string)
 {
     static constexpr const std::array<std::string_view, 7> NODE_STRINGS{
         "grouplayer", "paintlayer", "cloneLayer", "colorizemask", "filelayer", "transformmask", "transparencymask"
@@ -57,7 +57,22 @@ kra_imp_layer_type_e kra_imp_to_layer_type(const std::string_view string)
         }
     }
 
-    return KRA_IMP_UNKNOWN_LAYER_TYPE;
+    return KRA_IMP_UNKNOWN_TYPE;
+}
+
+kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
+{
+    static constexpr const std::array<std::string_view, 6> MODEL_STRINGS{ "LABA", "CMYK", "GRAYA", "RGBA", "XYZA", "YCBCRA" };
+
+    for (unsigned char i = 0; i < MODEL_STRINGS.size(); ++i)
+    {
+        if (string.find(MODEL_STRINGS[i]) != std::string::npos)
+        {
+            return static_cast<kra_imp_color_space_model_e>(i + 1);
+        }
+    }
+
+    return KRA_IMP_UNKNOWN_MODEL;
 }
 
 KRA_IMP_API unsigned int kra_imp_get_version()
@@ -97,15 +112,20 @@ KRA_IMP_API void kra_imp_close_archive(kra_imp_archive_t* archive)
 
 KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive, const char* file_path)
 {
-    if (archive == nullptr || zip_entry_open(archive->_archive, file_path) != 0)
+    if (archive == nullptr)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    if (zip_entry_open(archive->_archive, file_path) != 0)
+    {
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     const unsigned long long entry_size = zip_entry_size(archive->_archive);
     if (zip_entry_close(archive->_archive) != 0)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     return entry_size;
@@ -113,15 +133,20 @@ KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive,
 
 KRA_IMP_API unsigned long long kra_imp_load_file(kra_imp_archive_t* archive, const char* file_path, char* file_buffer, const unsigned long long file_buffer_size)
 {
-    if (archive == nullptr || zip_entry_open(archive->_archive, file_path) != 0)
+    if (archive == nullptr || file_buffer_size == 0UL)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    if (zip_entry_open(archive->_archive, file_path) != 0)
+    {
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     const unsigned long long read_bytes = zip_entry_noallocread(archive->_archive, file_buffer, file_buffer_size);
     if (zip_entry_close(archive->_archive) != 0)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     return read_bytes;
@@ -140,7 +165,7 @@ KRA_IMP_API const char* kra_imp_get_layer_directory_name()
 void iterate_layers_recursive(const pugi::xml_node& xml_node, unsigned int& layers_count)
 {
     const pugi::char_t* node_type_attribute = xml_node.attribute(KRA_IMP_NODE_TYPE_ATTRIBUTE).value();
-    const char current_layer_type = kra_imp_to_layer_type(std::string_view(node_type_attribute));
+    const char current_layer_type = to_layer_type(std::string_view(node_type_attribute));
     if (current_layer_type == KRA_IMP_GROUP_LAYER_TYPE)
     {
         const pugi::xpath_node_set layer_nodes = xml_node.select_nodes(KRA_IMP_INNER_LAYER_NODES);
@@ -154,16 +179,16 @@ void iterate_layers_recursive(const pugi::xml_node& xml_node, unsigned int& laye
 
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc)
 {
-    if (xml_buffer == nullptr || main_doc == nullptr)
+    if (xml_buffer == nullptr || xml_buffer_size == 0ULL || main_doc == nullptr)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARAMS_ERROR;
     }
 
     pugi::xml_document main_doc_xml_document;
     const pugi::xml_parse_result parse_result = main_doc_xml_document.load_buffer(xml_buffer, xml_buffer_size);
     if (!parse_result)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARSE_ERROR;
     }
 
     const pugi::xpath_node node = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
@@ -175,8 +200,8 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
 
     std::memset(main_doc->_image_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
     std::strcpy(main_doc->_image_name, image_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
-    std::memset(main_doc->_color_space, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
-    std::strcpy(main_doc->_color_space, image_node.attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value());
+    const pugi::char_t* color_space_attribute = image_node.attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value();
+    main_doc->_color_space_model = to_color_space_model(std::string_view(color_space_attribute));
     main_doc->_width = image_node.attribute(KRA_IMP_WIDTH_ATTRIBUTE).as_ullong();
     main_doc->_height = image_node.attribute(KRA_IMP_HEIGHT_ATTRIBUTE).as_ullong();
     const pugi::xpath_node_set layer_nodes = main_doc_xml_document.select_nodes(KRA_IMP_LAYER_NODES);
@@ -191,7 +216,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
 bool read_image_layer_recursive(const unsigned int layer_index, kra_imp_image_layer_t* image_layer, const pugi::xml_node& node, long& current_layer_index, const long parent_index)
 {
     const pugi::char_t* node_type_attribute = node.attribute(KRA_IMP_NODE_TYPE_ATTRIBUTE).value();
-    kra_imp_layer_type_e current_layer_type = kra_imp_to_layer_type(std::string_view(node_type_attribute));
+    const kra_imp_layer_type_e current_layer_type = to_layer_type(std::string_view(node_type_attribute));
     if (current_layer_index == layer_index)
     {
         image_layer->_type = current_layer_type;
@@ -222,16 +247,16 @@ bool read_image_layer_recursive(const unsigned int layer_index, kra_imp_image_la
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned int layer_index,
                                                           kra_imp_image_layer_t* image_layer)
 {
-    if (xml_buffer == nullptr || image_layer == nullptr)
+    if (xml_buffer == nullptr || xml_buffer_size == 0ULL || image_layer == nullptr)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARAMS_ERROR;
     }
 
     pugi::xml_document main_doc_xml_document;
     const pugi::xml_parse_result parse_result = main_doc_xml_document.load_buffer(xml_buffer, xml_buffer_size);
     if (!parse_result)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARSE_ERROR;
     }
 
     std::memset(image_layer->_file_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
@@ -254,16 +279,16 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer
 
 KRA_IMP_API unsigned int kra_imp_get_image_key_frames_count(const char* xml_buffer, const unsigned long long xml_buffer_size)
 {
-    if (xml_buffer == nullptr)
+    if (xml_buffer == nullptr || xml_buffer_size == 0ULL)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARAMS_ERROR;
     }
 
     pugi::xml_document key_frames_xml_document;
     const pugi::xml_parse_result parse_result = key_frames_xml_document.load_buffer(xml_buffer, xml_buffer_size);
     if (!parse_result)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARSE_ERROR;
     }
 
     const pugi::xpath_node_set key_frame_nodes = key_frames_xml_document.select_nodes(KRA_IMP_KEY_FRAME_NODES);
@@ -275,14 +300,14 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_key_frame(const char* xml_bu
 {
     if (xml_buffer == nullptr || image_key_frame == nullptr)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARAMS_ERROR;
     }
 
     pugi::xml_document key_frames_xml_document;
     const pugi::xml_parse_result parse_result = key_frames_xml_document.load_buffer(xml_buffer, xml_buffer_size);
     if (!parse_result)
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARSE_ERROR;
     }
 
     const pugi::xpath_node_set key_frame_nodes = key_frames_xml_document.select_nodes(KRA_IMP_KEY_FRAME_NODES);
@@ -319,15 +344,15 @@ std::string_view parse_header_element(const char* buffer, const unsigned long lo
     return current_hader_value;
 }
 
-kra_imp_error_code_e get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, char& value)
+bool get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, char& value)
 {
     const std::string_view current_hader_value = parse_header_element(buffer, buffer_size, header, buffer_offset);
     if (current_hader_value.empty() || std::from_chars(current_hader_value.data(), current_hader_value.data() + current_hader_value.size(), value).ec != std::errc())
     {
-        return KRA_IMP_FAIL;
+        return false;
     }
 
-    return KRA_IMP_SUCCESS;
+    return true;
 }
 
 kra_imp_error_code_e get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, unsigned int& value)
@@ -343,16 +368,21 @@ kra_imp_error_code_e get_header_element(const char* buffer, const unsigned long 
 
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buffer, const unsigned long long buffer_size, kra_imp_layer_data_header_t* layer_data_header)
 {
+    if (buffer == nullptr || buffer_size == 0ULL || layer_data_header == nullptr)
+    {
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
     static constexpr const std::array<std::string_view, 5> KRA_IMP_HEADERS{ "VERSION ", "TILEWIDTH ", "TILEHEIGHT ", "PIXELSIZE ", "DATA " };
 
     layer_data_header->_header_size = 0U;
-    if (get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[0], layer_data_header->_header_size, layer_data_header->_version) == KRA_IMP_FAIL ||
-        get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[1], layer_data_header->_header_size, layer_data_header->_layer_data_width) == KRA_IMP_FAIL ||
-        get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[2], layer_data_header->_header_size, layer_data_header->_layer_data_height) == KRA_IMP_FAIL ||
-        get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[3], layer_data_header->_header_size, layer_data_header->_layer_data_pixel_size) == KRA_IMP_FAIL ||
-        get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[4], layer_data_header->_header_size, layer_data_header->_layer_datas_count) == KRA_IMP_FAIL)
+    if (!get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[0], layer_data_header->_header_size, layer_data_header->_version) ||
+        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[1], layer_data_header->_header_size, layer_data_header->_layer_data_width) ||
+        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[2], layer_data_header->_header_size, layer_data_header->_layer_data_height) ||
+        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[3], layer_data_header->_header_size, layer_data_header->_layer_data_pixel_size) ||
+        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[4], layer_data_header->_header_size, layer_data_header->_layer_datas_count))
     {
-        return KRA_IMP_FAIL;
+        return KRA_IMP_PARSE_ERROR;
     }
 
     return KRA_IMP_SUCCESS;
@@ -382,53 +412,53 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
     {
         if (!separator_splitter(end_position))
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         const std::string_view tile_x_offset(&input[start_position], end_position - start_position);
         if (std::from_chars(tile_x_offset.data(), tile_x_offset.data() + tile_x_offset.size(), *x_offset).ec != std::errc())
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         start_position = end_position + 1UL;
         end_position = start_position + 1UL;
         if (!separator_splitter(end_position))
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         const std::string_view tile_y_offset(&input[start_position], end_position - start_position);
         if (std::from_chars(tile_y_offset.data(), tile_y_offset.data() + tile_y_offset.size(), *y_offset).ec != std::errc())
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         start_position = end_position + 1UL;
         end_position = start_position + 1UL;
         if (!separator_splitter(end_position))
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         const std::string_view tile_compression_type(&input[start_position], end_position - start_position);
         if (tile_compression_type.compare(KRA_IMP_COMPRESSION_TYPE) != 0)
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         start_position = end_position + 1UL;
         end_position = start_position + 1UL;
         if (!separator_splitter(end_position))
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         const std::string_view tile_compressed_size(&input[start_position], end_position - start_position);
         unsigned int compressed_size = 0U;
         if (std::from_chars(tile_compressed_size.data(), tile_compressed_size.data() + tile_compressed_size.size(), compressed_size).ec != std::errc())
         {
-            return KRA_IMP_FAIL;
+            return KRA_IMP_PARSE_ERROR;
         }
 
         start_position = end_position + 1UL;
@@ -439,7 +469,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             {
                 if (lzf_decompress(&input[start_position + 1UL], compressed_size - 1U, output, output_size) != output_size)
                 {
-                    return KRA_IMP_FAIL;
+                    return KRA_IMP_LZF_ERROR;
                 }
             }
             else
