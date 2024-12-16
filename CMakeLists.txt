@@ -56,6 +56,7 @@ add_subdirectory(pugixml)
 add_subdirectory(zip)
 
 if (BUILD_TESTING)
+	enable_testing()
 	add_subdirectory(Catch2)
 	add_subdirectory(test)
 endif()
