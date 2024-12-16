@@ -16,15 +16,7 @@
 static constexpr const char* KRA_IMP_MAIN_DOC_FILE_NAME{ "maindoc.xml" };
 static constexpr const char* KRA_IMP_LAYERS_DIRECTORY_NAME{ "layers" };
 static constexpr const pugi::char_t* KRA_IMP_DOC_IMAGE_NODE{ "DOC/IMAGE" };
-static constexpr const pugi::char_t* KRA_IMP_DOC_ANIMATION_NODE{ "DOC/IMAGE/animation" };
-static constexpr const pugi::char_t* KRA_IMP_FRAME_RATE_NODE{ "framerate" };
-static constexpr const pugi::char_t* KRA_IMP_RANGE_NODE{ "range" };
-static constexpr const pugi::char_t* KRA_IMP_VALUE_ATTRIBUTE{ "value" };
-static constexpr const pugi::char_t* KRA_IMP_TO_ATTRIBUTE{ "to" };
-static constexpr const pugi::char_t* KRA_IMP_FROM_ATTRIBUTE{ "from" };
 static constexpr const pugi::char_t* KRA_IMP_NAME_ATTRIBUTE{ "name" };
-static constexpr const pugi::char_t* KRA_IMP_OPACITY_ATTRIBUTE{ "opacity" };
-static constexpr const pugi::char_t* KRA_IMP_VISIBLE_ATTRIBUTE{ "visible" };
 static constexpr const pugi::char_t* KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE{ "colorspacename" };
 static constexpr const pugi::char_t* KRA_IMP_HEIGHT_ATTRIBUTE{ "height" };
 static constexpr const pugi::char_t* KRA_IMP_WIDTH_ATTRIBUTE{ "width" };
@@ -41,8 +33,7 @@ static constexpr const pugi::char_t* KRA_IMP_TIME_ATTRIBUTE{ "time" };
 static constexpr const pugi::char_t* KRA_IMP_OFFSET_NODE{ "offset" };
 static constexpr const char KRA_IMP_EMPTY_CHAR{ '\0' };
 static constexpr const char KRA_IMP_END{ '\n' };
-static constexpr const char KRA_IMP_UNCOMPRESSED_FLAG{ 0 };
-static constexpr const char KRA_IMP_COMPRESSED_FLAG{ 1 };
+static constexpr const char KRA_IMP_COMPRESSION_FLAG{ 1 };
 static constexpr const char KRA_IMP_SEPARATOR{ ',' };
 static constexpr const char* KRA_IMP_COMPRESSION_TYPE{ "LZF" };
 static constexpr const unsigned char KRA_IMP_MAX_NAME_LENGTH{ 255 };
@@ -66,7 +57,7 @@ kra_imp_layer_type_e to_layer_type(const std::string_view string)
         }
     }
 
-    return KRA_IMP_UNKNOWN_LAYER_TYPE;
+    return KRA_IMP_UNKNOWN_TYPE;
 }
 
 kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
@@ -81,7 +72,7 @@ kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
         }
     }
 
-    return KRA_IMP_UNKNOWN_COLOR_SPACE_MODEL;
+    return KRA_IMP_UNKNOWN_MODEL;
 }
 
 KRA_IMP_API unsigned int kra_imp_get_version()
@@ -91,7 +82,7 @@ KRA_IMP_API unsigned int kra_imp_get_version()
 
 KRA_IMP_API kra_imp_archive_t* kra_imp_open_archive(const char* archive_buffer, const unsigned long long archive_buffer_size)
 {
-    if (archive_buffer == nullptr || archive_buffer_size == 0ULL)
+    if (archive_buffer == nullptr || archive_buffer_size == 0UL)
     {
         return nullptr;
     }
@@ -121,15 +112,20 @@ KRA_IMP_API void kra_imp_close_archive(kra_imp_archive_t* archive)
 
 KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive, const char* file_path)
 {
-    if (archive == nullptr || zip_entry_open(archive->_archive, file_path) != 0)
+    if (archive == nullptr)
     {
-        return 0ULL;
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    if (zip_entry_open(archive->_archive, file_path) != 0)
+    {
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     const unsigned long long entry_size = zip_entry_size(archive->_archive);
     if (zip_entry_close(archive->_archive) != 0)
     {
-        return 0ULL;
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     return entry_size;
@@ -137,21 +133,26 @@ KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive,
 
 KRA_IMP_API unsigned long long kra_imp_load_file(kra_imp_archive_t* archive, const char* file_path, char* file_buffer, const unsigned long long file_buffer_size)
 {
-    if (archive == nullptr || file_buffer_size == 0ULL || zip_entry_open(archive->_archive, file_path) != 0)
+    if (archive == nullptr || file_buffer_size == 0UL)
     {
-        return 0ULL;
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    if (zip_entry_open(archive->_archive, file_path) != 0)
+    {
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     const unsigned long long read_bytes = zip_entry_noallocread(archive->_archive, file_buffer, file_buffer_size);
     if (zip_entry_close(archive->_archive) != 0)
     {
-        return 0ULL;
+        return KRA_IMP_ARCHIVE_ERROR;
     }
 
     return read_bytes;
 }
 
-KRA_IMP_API const char* kra_imp_get_main_doc_file_name()
+KRA_IMP_API const char* kra_imp_get_main_doc_name()
 {
     return KRA_IMP_MAIN_DOC_FILE_NAME;
 }
@@ -176,17 +177,6 @@ void iterate_layers_recursive(const pugi::xml_node& xml_node, unsigned int& laye
     ++layers_count;
 }
 
-void parse_animation(const pugi::xml_node& xml_node, kra_imp_animation_t& animation)
-{
-    const pugi::xpath_node frame_rate_xnode = xml_node.select_node(KRA_IMP_FRAME_RATE_NODE);
-    const pugi::xml_node frame_rate_node = frame_rate_xnode.node();
-    animation._frame_rate = frame_rate_node.empty() ? 0U : frame_rate_node.attribute(KRA_IMP_VALUE_ATTRIBUTE).as_uint();
-    const pugi::xpath_node range_xnode = xml_node.select_node(KRA_IMP_RANGE_NODE);
-    const pugi::xml_node range_node = range_xnode.node();
-    animation._from = range_node.empty() ? 0U : range_node.attribute(KRA_IMP_FROM_ATTRIBUTE).as_uint();
-    animation._to = range_node.empty() ? 0U : range_node.attribute(KRA_IMP_TO_ATTRIBUTE).as_uint();
-}
-
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc)
 {
     if (xml_buffer == nullptr || xml_buffer_size == 0ULL || main_doc == nullptr)
@@ -201,15 +191,13 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
         return KRA_IMP_PARSE_ERROR;
     }
 
-    const pugi::xpath_node image_xnode = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
-    const pugi::xml_node image_node = image_xnode.node();
+    const pugi::xpath_node node = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
+    const pugi::xml_node image_node = node.node();
     if (image_node.empty())
     {
         return KRA_IMP_FAIL;
     }
 
-    const pugi::xpath_node animation_xnode = main_doc_xml_document.select_node(KRA_IMP_DOC_ANIMATION_NODE);
-    parse_animation(animation_xnode.node(), main_doc->_animation);
     std::memset(main_doc->_image_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
     std::strcpy(main_doc->_image_name, image_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
     const pugi::char_t* color_space_attribute = image_node.attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value();
@@ -232,8 +220,6 @@ bool read_image_layer_recursive(const unsigned int layer_index, kra_imp_image_la
     if (current_layer_index == layer_index)
     {
         image_layer->_type = current_layer_type;
-        image_layer->_opacity = static_cast<unsigned char>(node.attribute(KRA_IMP_OPACITY_ATTRIBUTE).as_uint());
-        image_layer->_visibility = static_cast<kra_imp_layer_visibility_e>(node.attribute(KRA_IMP_VISIBLE_ATTRIBUTE).as_int());
         image_layer->_parent_index = parent_index;
         std::strcpy(image_layer->_file_name, node.attribute(KRA_IMP_FILE_NAME_ATTRIBUTE).value());
         std::strcpy(image_layer->_name, node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
@@ -295,14 +281,14 @@ KRA_IMP_API unsigned int kra_imp_get_image_key_frames_count(const char* xml_buff
 {
     if (xml_buffer == nullptr || xml_buffer_size == 0ULL)
     {
-        return 0U;
+        return KRA_IMP_PARAMS_ERROR;
     }
 
     pugi::xml_document key_frames_xml_document;
     const pugi::xml_parse_result parse_result = key_frames_xml_document.load_buffer(xml_buffer, xml_buffer_size);
     if (!parse_result)
     {
-        return 0U;
+        return KRA_IMP_PARSE_ERROR;
     }
 
     const pugi::xpath_node_set key_frame_nodes = key_frames_xml_document.select_nodes(KRA_IMP_KEY_FRAME_NODES);
@@ -355,21 +341,29 @@ std::string_view parse_header_element(const char* buffer, const unsigned long lo
         ++end_position;
     }
     const std::string_view current_hader_value(buffer + buffer_offset, end_position - buffer_offset);
-    buffer_offset = end_position + 1U;
     return current_hader_value;
 }
 
-bool get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, unsigned int& value)
+bool get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, char& value)
 {
     const std::string_view current_hader_value = parse_header_element(buffer, buffer_size, header, buffer_offset);
-    if (current_hader_value.empty())
+    if (current_hader_value.empty() || std::from_chars(current_hader_value.data(), current_hader_value.data() + current_hader_value.size(), value).ec != std::errc())
     {
         return false;
     }
 
-    std::size_t position = 0;
-    value = std::stoul(current_hader_value.data(), &position);
-    return position == current_hader_value.size();
+    return true;
+}
+
+kra_imp_error_code_e get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, unsigned int& value)
+{
+    const std::string_view current_hader_value = parse_header_element(buffer, buffer_size, header, buffer_offset);
+    if (current_hader_value.empty() || std::from_chars(current_hader_value.data(), current_hader_value.data() + current_hader_value.size(), value).ec != std::errc())
+    {
+        return KRA_IMP_FAIL;
+    }
+
+    return KRA_IMP_SUCCESS;
 }
 
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buffer, const unsigned long long buffer_size, kra_imp_layer_data_header_t* layer_data_header)
@@ -386,8 +380,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buff
         !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[1], layer_data_header->_header_size, layer_data_header->_layer_data_width) ||
         !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[2], layer_data_header->_header_size, layer_data_header->_layer_data_height) ||
         !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[3], layer_data_header->_header_size, layer_data_header->_layer_data_pixel_size) ||
-        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[4], layer_data_header->_header_size, layer_data_header->_layer_datas_count) ||
-        layer_data_header->_header_size > buffer_size)
+        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[4], layer_data_header->_header_size, layer_data_header->_layer_datas_count))
     {
         return KRA_IMP_PARSE_ERROR;
     }
@@ -398,11 +391,6 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buff
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, unsigned int layer_data_tile_index, char* output,
                                                               const unsigned long long output_size, int* x_offset, int* y_offset)
 {
-    if (input == nullptr || input_size == 0ULL || output == nullptr || output_size == 0ULL || x_offset == nullptr || y_offset == nullptr)
-    {
-        return KRA_IMP_PARAMS_ERROR;
-    }
-
     unsigned long long start_position = 0UL;
     unsigned long long end_position = 1UL;
 
@@ -427,7 +415,8 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        if (std::from_chars(&input[start_position], &input[end_position], *x_offset).ec != std::errc())
+        const std::string_view tile_x_offset(&input[start_position], end_position - start_position);
+        if (std::from_chars(tile_x_offset.data(), tile_x_offset.data() + tile_x_offset.size(), *x_offset).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -439,7 +428,8 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        if (std::from_chars(&input[start_position], &input[end_position], *y_offset).ec != std::errc())
+        const std::string_view tile_y_offset(&input[start_position], end_position - start_position);
+        if (std::from_chars(tile_y_offset.data(), tile_y_offset.data() + tile_y_offset.size(), *y_offset).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -464,8 +454,9 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
+        const std::string_view tile_compressed_size(&input[start_position], end_position - start_position);
         unsigned int compressed_size = 0U;
-        if (std::from_chars(&input[start_position], &input[end_position], compressed_size).ec != std::errc())
+        if (std::from_chars(tile_compressed_size.data(), tile_compressed_size.data() + tile_compressed_size.size(), compressed_size).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -474,20 +465,16 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
         end_position = start_position + 1UL;
         if (current_index == layer_data_tile_index)
         {
-            if (KRA_IMP_UNCOMPRESSED_FLAG == input[start_position])
-            {
-                std::memcpy(output, &input[start_position + 1UL], output_size);
-            }
-            else if (KRA_IMP_COMPRESSED_FLAG == input[start_position])
+            if (KRA_IMP_COMPRESSION_FLAG == input[start_position])
             {
                 if (lzf_decompress(&input[start_position + 1UL], compressed_size - 1U, output, output_size) != output_size)
                 {
-                    return KRA_IMP_DECOMPRESS_ERROR;
+                    return KRA_IMP_LZF_ERROR;
                 }
             }
             else
             {
-                return KRA_IMP_DECOMPRESS_ERROR;
+                std::memcpy(output, &input[start_position + 1UL], output_size);
             }
 
             return KRA_IMP_SUCCESS;
@@ -499,24 +486,12 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
     return KRA_IMP_FAIL;
 }
 
-KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra(const char* input, char* output, const unsigned long long buffer_size, const unsigned int width)
+KRA_IMP_API void kra_imp_delinearize_to_bgra(const char* input, const unsigned long long buffer_size, char* output, const unsigned int x_offset, const unsigned int y_offset,
+                                             const unsigned int input_width, const unsigned int output_width, const unsigned char pixel_size)
 {
-    return kra_imp_delinearize_to_bgra_with_offset(input, buffer_size, width, output, buffer_size, width, 0ULL);
-}
-
-KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra_with_offset(const char* input, const unsigned long long input_size, const unsigned int input_width, char* output,
-                                                                         const unsigned long long output_size, const unsigned int output_width,
-                                                                         const unsigned long long output_offset)
-{
-    if (input == nullptr || input_size == 0ULL || output == nullptr || output_size == 0ULL || output_width < input_width || (output_size - output_offset) < input_size)
-    {
-        return KRA_IMP_PARAMS_ERROR;
-    }
-
-    static constexpr unsigned char pixel_size = 4;
-    const unsigned long long input_rows = input_size / (pixel_size * input_width);
-    const unsigned long long pixels_to_delineearize = input_size / pixel_size;
-    unsigned long long output_idx = output_offset;
+    const unsigned long long input_rows = buffer_size / (pixel_size * input_width);
+    const unsigned long long pixels = buffer_size / pixel_size;
+    unsigned long long output_idx = y_offset * output_width * pixel_size + x_offset * pixel_size;
     for (unsigned long long y = 0UL; y < input_rows; ++y)
     {
         for (unsigned long long x = 0UL; x < input_width; ++x)
@@ -525,12 +500,10 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra_with_offset(const c
             for (unsigned char channel_index = 0; channel_index < pixel_size; ++channel_index)
             {
                 unsigned long long output_channel_idx = output_idx + (x * pixel_size) + channel_index;
-                unsigned long long input_channel_idx = channel_index * pixels_to_delineearize + input_idx;
+                unsigned long long input_channel_idx = channel_index * pixels + input_idx;
                 output[output_channel_idx] = input[input_channel_idx];
             }
         }
         output_idx += output_width * pixel_size;
     }
-
-    return KRA_IMP_SUCCESS;
 }

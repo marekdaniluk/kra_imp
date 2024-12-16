@@ -33,11 +33,12 @@ extern "C"
      */
     typedef enum kra_imp_error_code_e
     {
-        KRA_IMP_FAIL = 0,                   /**< Indicates the generic operation failed. */
-        KRA_IMP_SUCCESS = 1,                /**< Indicates that the operation completed successfully. */
-        KRA_IMP_PARAMS_ERROR = -1,          /**< Indicates operation failed due the invalid param(s). */
-        KRA_IMP_PARSE_ERROR = -2,           /**< Indicates that the parse operation failed. */
-        KRA_IMP_DECOMPRESS_ERROR = -3,      /**< Indicates that the decompress operation failed. */
+        KRA_IMP_FAIL = 0,           /**< Indicates the generic operation failed. */
+        KRA_IMP_SUCCESS = 1,        /**< Indicates that the operation completed successfully. */
+        KRA_IMP_PARAMS_ERROR = -1,  /**< Indicates operation failed due the invalid param(s). */
+        KRA_IMP_ARCHIVE_ERROR = -2, /**< Indicates archive (zip) internal operation failed . */
+        KRA_IMP_PARSE_ERROR = -3,   /**< Indicates that the parse operation failed. */
+        KRA_IMP_LZF_ERROR = -4,     /**< Indicates that the lzf decompress operation failed. */
     } kra_imp_error_code_e;
     /**
      * @ingroup kra_imp
@@ -54,13 +55,14 @@ extern "C"
      */
     typedef enum kra_imp_color_space_model_e
     {
-        KRA_IMP_UNKNOWN_COLOR_SPACE_MODEL = 0, /**< An unknown or unsupported color space model. */
-        KRA_IMP_CIELAB_COLOR_SPACE_MODEL,      /**< The CIELAB color space, commonly used for perceptual uniformity. */
-        KRA_IMP_CMYK_COLOR_SPACE_MODEL,        /**< The CMYK color space, primarily used in printing. */
-        KRA_IMP_GRAYA_COLOR_SPACE_MODEL,       /**< Grayscale color space with an alpha (transparency) channel. */
-        KRA_IMP_RGBA_COLOR_SPACE_MODEL,        /**< Red, Green, Blue, and Alpha (transparency) color space. */
-        KRA_IMP_XYZA_COLOR_SPACE_MODEL,        /**< The CIEXYZ color space with an alpha channel. */
-        KRA_IMP_YCBCR_COLOR_SPACE_MODEL,       /**< The YCbCr color space, often used in video and image compression. */
+        KRA_IMP_UNKNOWN_MODEL = 0, /**< An unknown or unsupported color space model. */
+        KRA_IMP_CIELAB,            /**< The CIELAB color space, commonly used for perceptual uniformity. */
+        KRA_IMP_CMYK,              /**< The CMYK color space, primarily used in printing. */
+        KRA_IMP_GRAYA,             /**< Grayscale color space with an alpha (transparency) channel. */
+        KRA_IMP_RGBA,              /**< Red, Green, Blue, and Alpha (transparency) color space. */
+        KRA_IMP_XYZA,              /**< The CIEXYZ color space with an alpha channel. */
+        KRA_IMP_YCBCR,             /**< The YCbCr color space, often used in video and image compression. */
+
     } kra_imp_color_space_model_e;
     /**
      * @ingroup kra_imp
@@ -77,29 +79,16 @@ extern "C"
      */
     typedef enum kra_imp_layer_type_e
     {
-        KRA_IMP_UNKNOWN_LAYER_TYPE = 0,      /**< The layer type is unknown or not recognized. */
-        KRA_IMP_GROUP_LAYER_TYPE,            /**< A group layer that can contain other layers, forming a hierarchical structure. */
-        KRA_IMP_PAINT_LAYER_TYPE,            /**< A standard paint layer used for raster graphics. */
-        KRA_IMP_CLONE_LAYER_TYPE,            /**< A clone layer that mirrors content from another layer. Unsupported. */
-        KRA_IMP_FILE_LAYER_TYPE,             /**< A file layer that links to an external file. Unsupported. */
-        KRA_IMP_COLORIZEMASK_LAYER_TYPE,     /**< A colorize mask layer used for coloring line art. Unsupported. */
-        KRA_IMP_TRANSFORMMASK_LAYER_TYPE,    /**< A transform mask layer used for geometric transformations such as scaling or rotation. Unsupported. */
-        KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE, /**< A transparency mask layer that modifies the opacity of its parent layer. Unsupported. */
+        KRA_IMP_UNKNOWN_TYPE = 0,           /**< The layer type is unknown or not recognized. */
+        KRA_IMP_GROUP_LAYER_TYPE,           /**< A group layer that can contain other layers, forming a hierarchical structure. */
+        KRA_IMP_PAINT_LAYER_TYPE,           /**< A standard paint layer used for raster graphics. */
+        KRA_IMP_CLONE_LAYER_TYPE,           /**< A clone layer that mirrors content from another layer. Unsupported. */
+        KRA_IMP_FILE_LAYER_TYPE,            /**< A file layer that links to an external file. Unsupported. */
+        KRA_IMP_COLORIZEMASK_LAYER_TYPE,    /**< A colorize mask layer used for coloring line art. Unsupported. */
+        KRA_IMP_TRANSFORMMASK_LAYER_TYPE,   /**< A transform mask layer used for geometric transformations such as scaling or rotation. Unsupported. */
+        KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE /**< A transparency mask layer that modifies the opacity of its parent layer. Unsupported. */
+
     } kra_imp_layer_type_e;
-    /**
-     * @ingroup kra_imp
-     *
-     * @brief Enumerates the visibility states of a layer in the KRA importer.
-     *
-     * @details
-     * This enumeration represents whether a layer is visible or hidden in the imported
-     * KRA document.
-     */
-    typedef enum kra_imp_layer_visibility_e
-    {
-        KRA_IMP_HIDDEN = 0, /**< The layer is hidden and not displayed in the composition. */
-        KRA_IMP_VISIBLE,    /**< The layer is visible and contributes to the composition. */
-    } kra_imp_layer_visibility_e;
     /**
      * @struct kra_imp_archive_t
      *
@@ -121,21 +110,6 @@ extern "C"
     struct KRA_IMP_API kra_imp_archive_t;
     typedef struct kra_imp_archive_t kra_imp_archive_t;
     /**
-     * @struct kra_imp_animation_t
-     *
-     * @brief Represents animation properties in a KRA file.
-     *
-     * @details
-     * This structure contains metadata related to the animation, including the frame rate and the range of frames defined for the animation.
-     */
-    struct KRA_IMP_API kra_imp_animation_t
-    {
-        unsigned int _frame_rate; /**< The frame rate of the animation in frames per second. */
-        unsigned int _from;       /**< The starting frame of the animation range. */
-        unsigned int _to;         /**< The ending frame of the animation range. */
-    };
-    typedef struct kra_imp_animation_t kra_imp_animation_t;
-    /**
      * @struct kra_imp_main_doc_t
      *
      * @brief Represents the main document metadata of a KRA image.
@@ -150,7 +124,6 @@ extern "C"
         unsigned int _layers_count;                     /**< The total number of layers in the image. */
         unsigned int _height;                           /**< The height of the image in pixels. */
         unsigned int _width;                            /**< The width of the image in pixels. */
-        kra_imp_animation_t _animation;                 /**< The animation properties associated with the image. */
     };
     typedef struct kra_imp_main_doc_t kra_imp_main_doc_t;
     /**
@@ -167,8 +140,6 @@ extern "C"
         char _name[KRA_IMP_MAX_STRING_LENGTH];            /**< The name of the layer. */
         char _file_name[KRA_IMP_MAX_STRING_LENGTH];       /**< The file name associated with the layer's content. */
         char _frame_file_name[KRA_IMP_MAX_STRING_LENGTH]; /**< The file name of the keyframe associated with the layer, if applicable. */
-        unsigned char _opacity;                           /**< The opacity of the layer, ranging from 0 (completely transparent) to 255 (fully opaque). */
-        kra_imp_layer_visibility_e _visibility;           /**< The visibility state of the layer, as defined by `kra_imp_layer_visibility_e`. */
         kra_imp_layer_type_e _type;                       /**< The type of the layer, defined by `kra_imp_layer_type_e`. */
         long _parent_index;                               /**< The index of the parent layer, or `-1` if the layer has no parent. */
     };
@@ -205,12 +176,12 @@ extern "C"
      */
     struct KRA_IMP_API kra_imp_layer_data_header_t
     {
-        unsigned int _header_size;           /**< The size of the header within the buffer. */
-        unsigned int _layer_datas_count;     /**< The number of tiles in the layer. */
-        unsigned int _layer_data_pixel_size; /**< The size of pixels in the data tiles. */
-        unsigned int _layer_data_width;      /**< Width dimension of each data tile in pixels. */
-        unsigned int _layer_data_height;     /**< Height dimension of each data tile in pixels. */
-        unsigned int _version;               /**< Version of the layer data format. */
+        unsigned int _header_size;       /**< The size of the header within the buffer. */
+        unsigned int _layer_datas_count; /**< The number of tiles in the layer. */
+        char _layer_data_pixel_size;     /**< The size of pixels in the data tiles. */
+        char _layer_data_width;          /**< Width dimension of each data tile in pixels. */
+        char _layer_data_height;         /**< Height dimension of each data tile in pixels. */
+        char _version;                   /**< Version of the layer data format. */
     };
     typedef struct kra_imp_layer_data_header_t kra_imp_layer_data_header_t;
 #ifdef __cplusplus
