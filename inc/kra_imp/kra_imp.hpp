@@ -128,7 +128,7 @@ extern "C"
      * @param[in] xml_buffer_size Size of the XML buffer in bytes.
      * @param[out] main_doc Pointer to the structure where the parsed main document data will be stored.
      *
-     * @return KRA_IMP_SUCCESS if the main document was successfully read and parsed, or KRA_IMP_FAIL on failure.
+     * @return KRA_IMP_SUCCESS if the main document was successfully read and parsed, or other `kra_imp_error_code_e` on failure.
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc);
     /**
@@ -147,7 +147,7 @@ extern "C"
      * @param[in] layer_index Index of the layer to read.
      * @param[out] image_layer Pointer to the structure where the parsed layer data will be stored.
      *
-     * @return KRA_IMP_SUCCESS if the layer was successfully read and parsed, or KRA_IMP_FAIL on failure.
+     * @return KRA_IMP_SUCCESS if the layer was successfully read and parsed, or other `kra_imp_error_code_e` on failure.
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_layer(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned int layer_index,
                                                               kra_imp_image_layer_t* image_layer);
@@ -181,7 +181,7 @@ extern "C"
      * @param[in] key_frame_index Index of the key frame to read.
      * @param[out] image_key_frame Pointer to the structure where the parsed key frame data will be stored.
      *
-     * @return KRA_IMP_SUCCESS if the key frame was successfully read, or KRA_IMP_FAIL on failure.
+     * @return KRA_IMP_SUCCESS if the key frame was successfully read, or other `kra_imp_error_code_e` on failure.
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_key_frame(const char* xml_buffer, const unsigned long long xml_buffer_size, const unsigned int key_frame_index,
                                                                   kra_imp_image_key_frame_t* image_key_frame);
@@ -198,7 +198,7 @@ extern "C"
      * @param[in] buffer_size Size of the buffer in bytes.
      * @param[out] layer_data_header Structure to store the parsed header data.
      *
-     * @return KRA_IMP_SUCCESS if the header was successfully read and parsed, or KRA_IMP_FAIL on failure.
+     * @return KRA_IMP_SUCCESS if the header was successfully read and parsed, or other `kra_imp_error_code_e` on failure.
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buffer, const unsigned long long buffer_size, kra_imp_layer_data_header_t* layer_data_header);
     /**
@@ -218,7 +218,7 @@ extern "C"
      * @param[out] x_offset Horizontal offset of the tile in the overall layer dimensions.
      * @param[out] y_offset Vertical offset of the tile in the overall layer dimensions.
      *
-     * @return KRA_IMP_SUCCESS if the tile was successfully read, or KRA_IMP_FAIL on failure.
+     * @return KRA_IMP_SUCCESS if the tile was successfully read, or other `kra_imp_error_code_e` on failure.
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, const unsigned int layer_data_tile_index, char* output,
                                                                   const unsigned long long output_size, int* x_offset, int* y_offset);

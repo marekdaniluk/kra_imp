@@ -33,9 +33,37 @@ extern "C"
      */
     typedef enum kra_imp_error_code_e
     {
-        KRA_IMP_FAIL = 0,   /**< Indicates that the operation failed. */
-        KRA_IMP_SUCCESS = 1 /**< Indicates that the operation completed successfully. */
+        KRA_IMP_FAIL = 0,           /**< Indicates the generic operation failed. */
+        KRA_IMP_SUCCESS = 1,        /**< Indicates that the operation completed successfully. */
+        KRA_IMP_PARAMS_ERROR = -1,  /**< Indicates operation failed due the invalid param(s). */
+        KRA_IMP_ARCHIVE_ERROR = -2, /**< Indicates archive (zip) internal operation failed . */
+        KRA_IMP_PARSE_ERROR = -3,   /**< Indicates that the parse operation failed. */
+        KRA_IMP_LZF_ERROR = -4,     /**< Indicates that the lzf decompress operation failed. */
     } kra_imp_error_code_e;
+    /**
+     * @ingroup kra_imp
+     *
+     * @brief Enumerates color space models in the KRA importer.
+     *
+     * @details
+     * This enumeration defines the various color space models that may be encountered in a KRA document.
+     * Each value represents a different color space model, which determines how color information is
+     * stored and processed for layers or images.
+     *
+     * @note Currently, only the `KRA_IMP_RGBA` color space model is supported by the KRA importer.
+     * Other color spaces are recognized but not processed.
+     */
+    typedef enum kra_imp_color_space_model_e
+    {
+        KRA_IMP_UNKNOWN_MODEL = 0, /**< An unknown or unsupported color space model. */
+        KRA_IMP_CIELAB,            /**< The CIELAB color space, commonly used for perceptual uniformity. */
+        KRA_IMP_CMYK,              /**< The CMYK color space, primarily used in printing. */
+        KRA_IMP_GRAYA,             /**< Grayscale color space with an alpha (transparency) channel. */
+        KRA_IMP_RGBA,              /**< Red, Green, Blue, and Alpha (transparency) color space. */
+        KRA_IMP_XYZA,              /**< The CIEXYZ color space with an alpha channel. */
+        KRA_IMP_YCBCR,             /**< The YCbCr color space, often used in video and image compression. */
+
+    } kra_imp_color_space_model_e;
     /**
      * @ingroup kra_imp
      *
@@ -51,7 +79,7 @@ extern "C"
      */
     typedef enum kra_imp_layer_type_e
     {
-        KRA_IMP_UNKNOWN_LAYER_TYPE = 0,     /**< The layer type is unknown or not recognized. */
+        KRA_IMP_UNKNOWN_TYPE = 0,           /**< The layer type is unknown or not recognized. */
         KRA_IMP_GROUP_LAYER_TYPE,           /**< A group layer that can contain other layers, forming a hierarchical structure. */
         KRA_IMP_PAINT_LAYER_TYPE,           /**< A standard paint layer used for raster graphics. */
         KRA_IMP_CLONE_LAYER_TYPE,           /**< A clone layer that mirrors content from another layer. Unsupported. */
@@ -91,11 +119,11 @@ extern "C"
      */
     struct KRA_IMP_API kra_imp_main_doc_t
     {
-        char _image_name[KRA_IMP_MAX_STRING_LENGTH];  /**< The name of the image as specified in the main document. */
-        char _color_space[KRA_IMP_MAX_STRING_LENGTH]; /**< The color space used by the image (e.g., RGBA, CMYK). */
-        unsigned int _layers_count;                   /**< The total number of layers in the image. */
-        unsigned int _height;                         /**< The height of the image in pixels. */
-        unsigned int _width;                          /**< The width of the image in pixels. */
+        char _image_name[KRA_IMP_MAX_STRING_LENGTH];    /**< The name of the image as specified in the main document. */
+        kra_imp_color_space_model_e _color_space_model; /**< The color space model used by the image (e.g., RGBA, CMYK). */
+        unsigned int _layers_count;                     /**< The total number of layers in the image. */
+        unsigned int _height;                           /**< The height of the image in pixels. */
+        unsigned int _width;                            /**< The width of the image in pixels. */
     };
     typedef struct kra_imp_main_doc_t kra_imp_main_doc_t;
     /**
