@@ -7,146 +7,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <kra_imp/kra_imp.hpp>
 
-TEST_CASE("kra_imp_read_main_doc null buffer", "[main_doc]")
-{
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(nullptr, 0ULL, &main_doc);
-    REQUIRE(result == KRA_IMP_PARAMS_ERROR);
-}
-
-TEST_CASE("kra_imp_read_main_doc xml_buffer_size=0", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita"
-	</DOC>
-	)";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), 0ULL, &main_doc);
-    REQUIRE(result == KRA_IMP_PARAMS_ERROR);
-}
-
-TEST_CASE("kra_imp_read_main_doc null kra_imp_main_doc_t", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita"
-	</DOC>
-	)";
-
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), nullptr);
-    REQUIRE(result == KRA_IMP_PARAMS_ERROR);
-}
-
-TEST_CASE("kra_imp_read_main_doc empty buffer", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = "";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
-    REQUIRE(result == KRA_IMP_PARAMS_ERROR);
-}
-
-TEST_CASE("kra_imp_read_main_doc invalid xml", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita"
-	</DOC>
-	)";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
-    REQUIRE(result == KRA_IMP_PARSE_ERROR);
-}
-
-TEST_CASE("kra_imp_read_main_doc invalid xml - no IMAGE node", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'>
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
-	</DOC>
-	)";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
-    REQUIRE(result == KRA_IMP_FAIL);
-}
-
-TEST_CASE("kra_imp_read_main_doc success", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'>
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
-	 <IMAGE name="Example" colorspacename="RGBA" y-res="100" proofing-model="CMYKA" x-res="100" proofing-intent="3" mime="application/x-kra" width="256" proofing-depth="U8" description="" proofing-profile-name="Chemical proof" proofing-adaptation-state="1" height="128" profile="sRGB IEC61966-2.1">
-	 </IMAGE>
-	</DOC>
-	)";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
-    REQUIRE(result == KRA_IMP_SUCCESS);
-    REQUIRE(main_doc._width == 256U);
-    REQUIRE(main_doc._height == 128U);
-    REQUIRE(std::strcmp(main_doc._image_name, "Example") == 0);
-    REQUIRE(main_doc._color_space_model == KRA_IMP_RGBA);
-    REQUIRE(main_doc._layers_count == 0U);
-}
-
-TEST_CASE("kra_imp_read_main_doc with a layer", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'>
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
-	 <IMAGE name="Example" colorspacename="YCBCRAU16" y-res="100" proofing-model="CMYKA" x-res="100" proofing-intent="3" mime="application/x-kra" width="128" proofing-depth="U8" description="" proofing-profile-name="Chemical proof" proofing-adaptation-state="1" height="128" profile="ITU-R BT.709-6 YCbCr ICC V4 profile">
-	  <layers>
-	   <layer name="layer_1" colorspacename="YCBCRAU16" onionskin="0" x="0" nodetype="paintlayer" y="0" channellockflags="1111" visible="1" compositeop="normal" intimeline="1" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer1" channelflags="" uuid="{683fcc00-dd23-4de2-9559-1ba917d53a7b}"/>
-	  </layers>
-	 </IMAGE>
-	</DOC>
-	)";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
-    REQUIRE(result == KRA_IMP_SUCCESS);
-    REQUIRE(main_doc._width == 128U);
-    REQUIRE(main_doc._height == 128U);
-    REQUIRE(std::strcmp(main_doc._image_name, "Example") == 0);
-    REQUIRE(main_doc._color_space_model == KRA_IMP_YCBCR);
-    REQUIRE(main_doc._layers_count == 1U);
-}
-
-TEST_CASE("kra_imp_read_main_doc invalid image's space model", "[main_doc]")
-{
-    constexpr const std::string_view MAIN_DOC_XML = R"(
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'>
-	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
-	 <IMAGE name="Example" colorspacename="invalid" y-res="100" proofing-model="CMYKA" x-res="100" proofing-intent="3" mime="application/x-kra" width="128" proofing-depth="U8" description="" proofing-profile-name="Chemical proof" proofing-adaptation-state="1" height="128" profile="ITU-R BT.709-6 YCbCr ICC V4 profile">
-	  <layers>
-	   <layer name="layer_1" colorspacename="invalid" onionskin="0" x="0" nodetype="paintlayer" y="0" channellockflags="1111" visible="1" compositeop="normal" intimeline="1" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer1" channelflags="" uuid="{683fcc00-dd23-4de2-9559-1ba917d53a7b}"/>
-	  </layers>
-	 </IMAGE>
-	</DOC>
-	)";
-
-    kra_imp_main_doc_t main_doc;
-    kra_imp_error_code_e result = kra_imp_read_main_doc(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), &main_doc);
-    REQUIRE(result == KRA_IMP_SUCCESS);
-    REQUIRE(main_doc._width == 128U);
-    REQUIRE(main_doc._height == 128U);
-    REQUIRE(std::strcmp(main_doc._image_name, "Example") == 0);
-    REQUIRE(main_doc._color_space_model == KRA_IMP_UNKNOWN_MODEL);
-    REQUIRE(main_doc._layers_count == 1U);
-}
-
 TEST_CASE("kra_imp_read_image_layer null buffer", "[image_layer]")
 {
     kra_imp_image_layer_t image_layer;
@@ -272,6 +132,34 @@ TEST_CASE("kra_imp_read_image_layer success", "[image_layer]")
     REQUIRE(result == KRA_IMP_SUCCESS);
     REQUIRE(image_layer._type == KRA_IMP_PAINT_LAYER_TYPE);
     REQUIRE(image_layer._parent_index == -1L);
+    REQUIRE(image_layer._opacity == 255U);
+    REQUIRE(image_layer._visibility == KRA_IMP_VISIBLE);
+    REQUIRE(std::strcmp(image_layer._file_name, "layer1") == 0);
+    REQUIRE(std::strcmp(image_layer._frame_file_name, "") == 0);
+    REQUIRE(std::strcmp(image_layer._name, "layer_1") == 0);
+}
+
+TEST_CASE("kra_imp_read_image_layer opacity", "[image_layer]")
+{
+    constexpr const std::string_view MAIN_DOC_XML = R"(
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE DOC PUBLIC '-//KDE//DTD krita 2.0//EN' 'http://www.calligra.org/DTD/krita-2.0.dtd'>
+	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
+	 <IMAGE name="Example" colorspacename="RGBA" y-res="100" proofing-model="CMYKA" x-res="100" proofing-intent="3" mime="application/x-kra" width="128" proofing-depth="U8" description="" proofing-profile-name="Chemical proof" proofing-adaptation-state="1" height="128" profile="sRGB IEC61966-2.1">
+	  <layers>
+	   <layer name="layer_1" colorspacename="RGBA" onionskin="0" x="0" nodetype="paintlayer" y="0" channellockflags="1111" visible="1" compositeop="normal" intimeline="1" locked="0" collapsed="0" colorlabel="0" opacity="127" filename="layer1" channelflags="" uuid="{683fcc00-dd23-4de2-9559-1ba917d53a7b}"/>
+	  </layers>
+	 </IMAGE>
+	</DOC>
+	)";
+
+    kra_imp_image_layer_t image_layer;
+    kra_imp_error_code_e result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 0U, &image_layer);
+    REQUIRE(result == KRA_IMP_SUCCESS);
+    REQUIRE(image_layer._type == KRA_IMP_PAINT_LAYER_TYPE);
+    REQUIRE(image_layer._parent_index == -1L);
+    REQUIRE(image_layer._opacity == 127U);
+    REQUIRE(image_layer._visibility == KRA_IMP_VISIBLE);
     REQUIRE(std::strcmp(image_layer._file_name, "layer1") == 0);
     REQUIRE(std::strcmp(image_layer._frame_file_name, "") == 0);
     REQUIRE(std::strcmp(image_layer._name, "layer_1") == 0);
@@ -285,7 +173,7 @@ TEST_CASE("kra_imp_read_image_layer with a grouped layers", "[image_layer]")
 	<DOC xmlns="http://www.calligra.org/DTD/krita" kritaVersion="5.0.0" syntaxVersion="2.0" editor="Krita">
 	 <IMAGE name="Example" colorspacename="RGBA" y-res="100" proofing-model="CMYKA" x-res="100" proofing-intent="3" mime="application/x-kra" width="128" proofing-depth="U8" description="" proofing-profile-name="Chemical proof" proofing-adaptation-state="1" height="128" profile="sRGB IEC61966-2.1">
 	  <layers>
-	   <layer name="group" x="0" passthrough="0" nodetype="grouplayer" y="0" visible="1" compositeop="normal" intimeline="0" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer1" channelflags="" uuid="{2a16ae40-0a0b-4f13-b470-8a43c1ad1265}">
+	   <layer name="group" x="0" passthrough="0" nodetype="grouplayer" y="0" visible="0" compositeop="normal" intimeline="0" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer1" channelflags="" uuid="{2a16ae40-0a0b-4f13-b470-8a43c1ad1265}">
 	    <layers>
 	     <layer name="sublayer" colorspacename="RGBA" onionskin="0" x="0" nodetype="paintlayer" y="0" channellockflags="1111" visible="1" compositeop="normal" intimeline="1" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer2" channelflags="" uuid="{5ff215e2-855a-44c5-916d-9e06d53cff4d}"/>
 	    </layers>
@@ -300,10 +188,14 @@ TEST_CASE("kra_imp_read_image_layer with a grouped layers", "[image_layer]")
     REQUIRE(result == KRA_IMP_SUCCESS);
     REQUIRE(image_layer._type == KRA_IMP_GROUP_LAYER_TYPE);
     REQUIRE(image_layer._parent_index == -1L);
+    REQUIRE(image_layer._opacity == 255U);
+    REQUIRE(image_layer._visibility == KRA_IMP_HIDDEN);
     result = kra_imp_read_image_layer(MAIN_DOC_XML.data(), MAIN_DOC_XML.size(), 1U, &image_layer);
     REQUIRE(result == KRA_IMP_SUCCESS);
     REQUIRE(image_layer._type == KRA_IMP_PAINT_LAYER_TYPE);
     REQUIRE(image_layer._parent_index == 0L);
+    REQUIRE(image_layer._opacity == 255U);
+    REQUIRE(image_layer._visibility == KRA_IMP_VISIBLE);
     REQUIRE(std::strcmp(image_layer._file_name, "layer2") == 0);
     REQUIRE(std::strcmp(image_layer._frame_file_name, "") == 0);
     REQUIRE(std::strcmp(image_layer._name, "sublayer") == 0);

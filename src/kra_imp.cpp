@@ -17,6 +17,8 @@ static constexpr const char* KRA_IMP_MAIN_DOC_FILE_NAME{ "maindoc.xml" };
 static constexpr const char* KRA_IMP_LAYERS_DIRECTORY_NAME{ "layers" };
 static constexpr const pugi::char_t* KRA_IMP_DOC_IMAGE_NODE{ "DOC/IMAGE" };
 static constexpr const pugi::char_t* KRA_IMP_NAME_ATTRIBUTE{ "name" };
+static constexpr const pugi::char_t* KRA_IMP_OPACITY_ATTRIBUTE{ "opacity" };
+static constexpr const pugi::char_t* KRA_IMP_VISIBLE_ATTRIBUTE{ "visible" };
 static constexpr const pugi::char_t* KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE{ "colorspacename" };
 static constexpr const pugi::char_t* KRA_IMP_HEIGHT_ATTRIBUTE{ "height" };
 static constexpr const pugi::char_t* KRA_IMP_WIDTH_ATTRIBUTE{ "width" };
@@ -57,7 +59,7 @@ kra_imp_layer_type_e to_layer_type(const std::string_view string)
         }
     }
 
-    return KRA_IMP_UNKNOWN_TYPE;
+    return KRA_IMP_UNKNOWN_LAYER_TYPE;
 }
 
 kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
@@ -72,7 +74,7 @@ kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
         }
     }
 
-    return KRA_IMP_UNKNOWN_MODEL;
+    return KRA_IMP_UNKNOWN_COLOR_SPACE_MODEL;
 }
 
 KRA_IMP_API unsigned int kra_imp_get_version()
@@ -220,6 +222,8 @@ bool read_image_layer_recursive(const unsigned int layer_index, kra_imp_image_la
     if (current_layer_index == layer_index)
     {
         image_layer->_type = current_layer_type;
+        image_layer->_opacity = static_cast<unsigned char>(node.attribute(KRA_IMP_OPACITY_ATTRIBUTE).as_uint());
+        image_layer->_visibility = static_cast<kra_imp_layer_visibility_e>(node.attribute(KRA_IMP_VISIBLE_ATTRIBUTE).as_int());
         image_layer->_parent_index = parent_index;
         std::strcpy(image_layer->_file_name, node.attribute(KRA_IMP_FILE_NAME_ATTRIBUTE).value());
         std::strcpy(image_layer->_name, node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
