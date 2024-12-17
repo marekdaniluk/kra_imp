@@ -55,14 +55,13 @@ extern "C"
      */
     typedef enum kra_imp_color_space_model_e
     {
-        KRA_IMP_UNKNOWN_MODEL = 0, /**< An unknown or unsupported color space model. */
-        KRA_IMP_CIELAB,            /**< The CIELAB color space, commonly used for perceptual uniformity. */
-        KRA_IMP_CMYK,              /**< The CMYK color space, primarily used in printing. */
-        KRA_IMP_GRAYA,             /**< Grayscale color space with an alpha (transparency) channel. */
-        KRA_IMP_RGBA,              /**< Red, Green, Blue, and Alpha (transparency) color space. */
-        KRA_IMP_XYZA,              /**< The CIEXYZ color space with an alpha channel. */
-        KRA_IMP_YCBCR,             /**< The YCbCr color space, often used in video and image compression. */
-
+        KRA_IMP_UNKNOWN_COLOR_SPACE_MODEL = 0, /**< An unknown or unsupported color space model. */
+        KRA_IMP_CIELAB_COLOR_SPACE_MODEL,      /**< The CIELAB color space, commonly used for perceptual uniformity. */
+        KRA_IMP_CMYK_COLOR_SPACE_MODEL,        /**< The CMYK color space, primarily used in printing. */
+        KRA_IMP_GRAYA_COLOR_SPACE_MODEL,       /**< Grayscale color space with an alpha (transparency) channel. */
+        KRA_IMP_RGBA_COLOR_SPACE_MODEL,        /**< Red, Green, Blue, and Alpha (transparency) color space. */
+        KRA_IMP_XYZA_COLOR_SPACE_MODEL,        /**< The CIEXYZ color space with an alpha channel. */
+        KRA_IMP_YCBCR_COLOR_SPACE_MODEL,       /**< The YCbCr color space, often used in video and image compression. */
     } kra_imp_color_space_model_e;
     /**
      * @ingroup kra_imp
@@ -79,16 +78,29 @@ extern "C"
      */
     typedef enum kra_imp_layer_type_e
     {
-        KRA_IMP_UNKNOWN_TYPE = 0,           /**< The layer type is unknown or not recognized. */
-        KRA_IMP_GROUP_LAYER_TYPE,           /**< A group layer that can contain other layers, forming a hierarchical structure. */
-        KRA_IMP_PAINT_LAYER_TYPE,           /**< A standard paint layer used for raster graphics. */
-        KRA_IMP_CLONE_LAYER_TYPE,           /**< A clone layer that mirrors content from another layer. Unsupported. */
-        KRA_IMP_FILE_LAYER_TYPE,            /**< A file layer that links to an external file. Unsupported. */
-        KRA_IMP_COLORIZEMASK_LAYER_TYPE,    /**< A colorize mask layer used for coloring line art. Unsupported. */
-        KRA_IMP_TRANSFORMMASK_LAYER_TYPE,   /**< A transform mask layer used for geometric transformations such as scaling or rotation. Unsupported. */
-        KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE /**< A transparency mask layer that modifies the opacity of its parent layer. Unsupported. */
-
+        KRA_IMP_UNKNOWN_LAYER_TYPE = 0,      /**< The layer type is unknown or not recognized. */
+        KRA_IMP_GROUP_LAYER_TYPE,            /**< A group layer that can contain other layers, forming a hierarchical structure. */
+        KRA_IMP_PAINT_LAYER_TYPE,            /**< A standard paint layer used for raster graphics. */
+        KRA_IMP_CLONE_LAYER_TYPE,            /**< A clone layer that mirrors content from another layer. Unsupported. */
+        KRA_IMP_FILE_LAYER_TYPE,             /**< A file layer that links to an external file. Unsupported. */
+        KRA_IMP_COLORIZEMASK_LAYER_TYPE,     /**< A colorize mask layer used for coloring line art. Unsupported. */
+        KRA_IMP_TRANSFORMMASK_LAYER_TYPE,    /**< A transform mask layer used for geometric transformations such as scaling or rotation. Unsupported. */
+        KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE, /**< A transparency mask layer that modifies the opacity of its parent layer. Unsupported. */
     } kra_imp_layer_type_e;
+    /**
+     * @ingroup kra_imp
+     *
+     * @brief Enumerates the visibility states of a layer in the KRA importer.
+     *
+     * @details
+     * This enumeration represents whether a layer is visible or hidden in the imported
+     * KRA document.
+     */
+    typedef enum kra_imp_layer_visibility_e
+    {
+        KRA_IMP_HIDDEN = 0, /**< The layer is hidden and not displayed in the composition. */
+        KRA_IMP_VISIBLE,    /**< The layer is visible and contributes to the composition. */
+    } kra_imp_layer_visibility_e;
     /**
      * @struct kra_imp_archive_t
      *
@@ -140,6 +152,8 @@ extern "C"
         char _name[KRA_IMP_MAX_STRING_LENGTH];            /**< The name of the layer. */
         char _file_name[KRA_IMP_MAX_STRING_LENGTH];       /**< The file name associated with the layer's content. */
         char _frame_file_name[KRA_IMP_MAX_STRING_LENGTH]; /**< The file name of the keyframe associated with the layer, if applicable. */
+        unsigned char _opacity;                           /**< The opacity of the layer, ranging from 0 (completely transparent) to 255 (fully opaque). */
+        kra_imp_layer_visibility_e _visibility;           /**< The visibility state of the layer, as defined by `kra_imp_layer_visibility_e`. */
         kra_imp_layer_type_e _type;                       /**< The type of the layer, defined by `kra_imp_layer_type_e`. */
         long _parent_index;                               /**< The index of the parent layer, or `-1` if the layer has no parent. */
     };
