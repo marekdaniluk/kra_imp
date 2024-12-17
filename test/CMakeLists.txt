@@ -1,5 +1,6 @@
 ﻿add_executable(kra_imp_test
 	test.cpp
+	main_doc_tests.cpp
 )
 
 target_link_libraries(kra_imp_test
