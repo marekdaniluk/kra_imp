@@ -1,5 +1,6 @@
 ﻿add_executable(kra_imp_test
 	test.cpp
+	image_layer_tests.cpp
 	main_doc_tests.cpp
 )
 
