@@ -154,7 +154,7 @@ KRA_IMP_API unsigned long long kra_imp_load_file(kra_imp_archive_t* archive, con
     return read_bytes;
 }
 
-KRA_IMP_API const char* kra_imp_get_main_doc_name()
+KRA_IMP_API const char* kra_imp_get_main_doc_file_name()
 {
     return KRA_IMP_MAIN_DOC_FILE_NAME;
 }

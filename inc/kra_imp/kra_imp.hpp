@@ -88,14 +88,14 @@ extern "C"
     /**
      * @ingroup kra_imp
      *
-     * @brief Gets the name of the main document in the archive.
+     * @brief Gets the name of the main document file in the archive.
      *
      * @details
      * For the current KRA format, the main document is expected to have the name `maindoc.xml`.
      *
      * @return Name of the main document file as a string.
      */
-    KRA_IMP_API const char* kra_imp_get_main_doc_name();
+    KRA_IMP_API const char* kra_imp_get_main_doc_file_name();
     /**
      * @ingroup kra_imp
      *
