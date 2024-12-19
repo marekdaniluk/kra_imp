@@ -122,6 +122,21 @@ extern "C"
     struct KRA_IMP_API kra_imp_archive_t;
     typedef struct kra_imp_archive_t kra_imp_archive_t;
     /**
+     * @struct kra_imp_animation_t
+     *
+     * @brief Represents animation properties in a KRA file.
+     *
+     * @details
+     * This structure contains metadata related to the animation, including the frame rate and the range of frames defined for the animation.
+     */
+    struct KRA_IMP_API kra_imp_animation_t
+    {
+        unsigned int _frame_rate; /**< The frame rate of the animation in frames per second. */
+        unsigned int _from;       /**< The starting frame of the animation range. */
+        unsigned int _to;         /**< The ending frame of the animation range. */
+    };
+    typedef struct kra_imp_animation_t kra_imp_animation_t;
+    /**
      * @struct kra_imp_main_doc_t
      *
      * @brief Represents the main document metadata of a KRA image.
@@ -136,6 +151,7 @@ extern "C"
         unsigned int _layers_count;                     /**< The total number of layers in the image. */
         unsigned int _height;                           /**< The height of the image in pixels. */
         unsigned int _width;                            /**< The width of the image in pixels. */
+        kra_imp_animation_t _animation;                 /**< The animation properties associated with the image. */
     };
     typedef struct kra_imp_main_doc_t kra_imp_main_doc_t;
     /**

@@ -16,6 +16,12 @@
 static constexpr const char* KRA_IMP_MAIN_DOC_FILE_NAME{ "maindoc.xml" };
 static constexpr const char* KRA_IMP_LAYERS_DIRECTORY_NAME{ "layers" };
 static constexpr const pugi::char_t* KRA_IMP_DOC_IMAGE_NODE{ "DOC/IMAGE" };
+static constexpr const pugi::char_t* KRA_IMP_DOC_ANIMATION_NODE{ "DOC/IMAGE/animation" };
+static constexpr const pugi::char_t* KRA_IMP_FRAME_RATE_NODE{ "framerate" };
+static constexpr const pugi::char_t* KRA_IMP_RANGE_NODE{ "range" };
+static constexpr const pugi::char_t* KRA_IMP_VALUE_ATTRIBUTE{ "value" };
+static constexpr const pugi::char_t* KRA_IMP_TO_ATTRIBUTE{ "to" };
+static constexpr const pugi::char_t* KRA_IMP_FROM_ATTRIBUTE{ "from" };
 static constexpr const pugi::char_t* KRA_IMP_NAME_ATTRIBUTE{ "name" };
 static constexpr const pugi::char_t* KRA_IMP_OPACITY_ATTRIBUTE{ "opacity" };
 static constexpr const pugi::char_t* KRA_IMP_VISIBLE_ATTRIBUTE{ "visible" };
@@ -179,6 +185,17 @@ void iterate_layers_recursive(const pugi::xml_node& xml_node, unsigned int& laye
     ++layers_count;
 }
 
+void parse_animation(const pugi::xml_node& xml_node, kra_imp_animation_t& animation)
+{
+    const pugi::xpath_node frame_rate_xnode = xml_node.select_node(KRA_IMP_FRAME_RATE_NODE);
+    const pugi::xml_node frame_rate_node = frame_rate_xnode.node();
+    animation._frame_rate = frame_rate_node.empty() ? 0U : frame_rate_node.attribute(KRA_IMP_VALUE_ATTRIBUTE).as_uint();
+    const pugi::xpath_node range_xnode = xml_node.select_node(KRA_IMP_RANGE_NODE);
+    const pugi::xml_node range_node = range_xnode.node();
+    animation._from = range_node.empty() ? 0U : range_node.attribute(KRA_IMP_FROM_ATTRIBUTE).as_uint();
+    animation._to = range_node.empty() ? 0U : range_node.attribute(KRA_IMP_TO_ATTRIBUTE).as_uint();
+}
+
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, const unsigned long long xml_buffer_size, kra_imp_main_doc_t* main_doc)
 {
     if (xml_buffer == nullptr || xml_buffer_size == 0ULL || main_doc == nullptr)
@@ -193,13 +210,15 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
         return KRA_IMP_PARSE_ERROR;
     }
 
-    const pugi::xpath_node node = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
-    const pugi::xml_node image_node = node.node();
+    const pugi::xpath_node image_xnode = main_doc_xml_document.select_node(KRA_IMP_DOC_IMAGE_NODE);
+    const pugi::xml_node image_node = image_xnode.node();
     if (image_node.empty())
     {
         return KRA_IMP_FAIL;
     }
 
+    const pugi::xpath_node animation_xnode = main_doc_xml_document.select_node(KRA_IMP_DOC_ANIMATION_NODE);
+    parse_animation(animation_xnode.node(), main_doc->_animation);
     std::memset(main_doc->_image_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
     std::strcpy(main_doc->_image_name, image_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
     const pugi::char_t* color_space_attribute = image_node.attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value();
@@ -285,14 +304,14 @@ KRA_IMP_API unsigned int kra_imp_get_image_key_frames_count(const char* xml_buff
 {
     if (xml_buffer == nullptr || xml_buffer_size == 0ULL)
     {
-        return KRA_IMP_PARAMS_ERROR;
+        return 0U;
     }
 
     pugi::xml_document key_frames_xml_document;
     const pugi::xml_parse_result parse_result = key_frames_xml_document.load_buffer(xml_buffer, xml_buffer_size);
     if (!parse_result)
     {
-        return KRA_IMP_PARSE_ERROR;
+        return 0U;
     }
 
     const pugi::xpath_node_set key_frame_nodes = key_frames_xml_document.select_nodes(KRA_IMP_KEY_FRAME_NODES);
