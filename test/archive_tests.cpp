@@ -10,7 +10,7 @@
 
 constexpr const std::string_view EMPTY_ARCHIVE = "";
 
-constexpr const std::array<char, 291> INVALID_ARCHIVE = {
+constexpr const std::array<unsigned char, 291> INVALID_ARCHIVE = {
     0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x0D, 0x0A, 0x00, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x57, 0x65, 0x62, 0x4B, 0x69, 0x74, 0x46, 0x6F, 0x72, 0x6D, 0x42, 0x6F,
     0x75, 0x6E, 0x64, 0x61, 0x72, 0x79, 0x7A, 0x5A, 0x64, 0x50, 0x4C, 0x4F, 0x36, 0x6E, 0x33, 0x69, 0x69, 0x31, 0x48, 0x42, 0x69, 0x6F, 0x0D, 0x0A, 0x43, 0x6F, 0x6E,
     0x74, 0x65, 0x6E, 0x74, 0x2D, 0x44, 0x69, 0x73, 0x70, 0x6F, 0x73, 0x69, 0x74, 0x69, 0x6F, 0x6E, 0x3A, 0x20, 0x66, 0x6F, 0x72, 0x6D, 0x2D, 0x64, 0x61, 0x74, 0x61,
@@ -24,7 +24,7 @@ constexpr const std::array<char, 291> INVALID_ARCHIVE = {
     0x78, 0x36, 0x44, 0x2C, 0x30, 0x78, 0x37, 0x30, 0x2C, 0x30, 0x78, 0x36, 0x43, 0x2C, 0x30, 0x78, 0x36, 0x35, 0x2C, 0x30, 0x78
 };
 
-constexpr const std::array<char, 667> PROPER_ARCHIVE = {
+constexpr const std::array<unsigned char, 667> PROPER_ARCHIVE = {
     0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x71, 0x86, 0x9C, 0x59, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x20,
     0x00, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x2F, 0x75, 0x78, 0x0B, 0x00, 0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x55, 0x54, 0x0D, 0x00, 0x07,
     0x86, 0x1E, 0x70, 0x67, 0x95, 0x1E, 0x70, 0x67, 0x79, 0x1E, 0x70, 0x67, 0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x08, 0x00, 0x08, 0x00, 0x74, 0x86, 0x9C, 0x59, 0x00, 0x00, 0x00,
@@ -61,7 +61,7 @@ TEST_CASE("kra_imp_open_archive null buffer", "[archive]")
 
 TEST_CASE("kra_imp_open_archive archive_buffer_size=0", "[archive]")
 {
-    kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), 0ULL);
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(PROPER_ARCHIVE.data()), 0ULL);
     REQUIRE(archive == nullptr);
 }
 
@@ -73,26 +73,26 @@ TEST_CASE("kra_imp_open_archive empty buffer", "[archive]")
 
 TEST_CASE("kra_imp_open_archive success", "[archive]")
 {
-    kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(PROPER_ARCHIVE.data()), PROPER_ARCHIVE.size());
     REQUIRE(archive != nullptr);
     kra_imp_close_archive(archive);
 }
 
 TEST_CASE("kra_imp_open_archive invalid archive", "[archive]")
 {
-    kra_imp_archive_t* archive = kra_imp_open_archive(INVALID_ARCHIVE.data(), INVALID_ARCHIVE.size());
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(INVALID_ARCHIVE.data()), INVALID_ARCHIVE.size());
     REQUIRE(archive == nullptr);
 }
 
 TEST_CASE("kra_imp_get_file_size null archive", "[archive]")
 {
-    const unsigned long long file_size = kra_imp_get_file_size(nullptr, PROPER_ARCHIVE.data());
+    const unsigned long long file_size = kra_imp_get_file_size(nullptr, reinterpret_cast<const char*>(PROPER_ARCHIVE.data()));
     REQUIRE(file_size == 0ULL);
 }
 
 TEST_CASE("kra_imp_get_file_size wrong file", "[archive]")
 {
-    kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(PROPER_ARCHIVE.data()), PROPER_ARCHIVE.size());
     REQUIRE(archive != nullptr);
     const unsigned long long file_size = kra_imp_get_file_size(archive, WRONG_FILE_PATH.data());
     REQUIRE(file_size == 0ULL);
@@ -101,7 +101,7 @@ TEST_CASE("kra_imp_get_file_size wrong file", "[archive]")
 
 TEST_CASE("kra_imp_get_file_size proper file", "[archive]")
 {
-    kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(PROPER_ARCHIVE.data()), PROPER_ARCHIVE.size());
     const unsigned long long file_size = kra_imp_get_file_size(archive, PROPER_FILE_PATH.data());
     REQUIRE(file_size == 7ULL);
     kra_imp_close_archive(archive);
@@ -117,7 +117,7 @@ TEST_CASE("kra_imp_load_file null archive", "[archive]")
 TEST_CASE("kra_imp_load_file wrong file", "[archive]")
 {
     std::array<char, 7> file_buffer{};
-    kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(PROPER_ARCHIVE.data()), PROPER_ARCHIVE.size());
     const unsigned long long file_size = kra_imp_load_file(archive, WRONG_FILE_PATH.data(), file_buffer.data(), file_buffer.size());
     REQUIRE(file_size == 0ULL);
     kra_imp_close_archive(archive);
@@ -126,7 +126,7 @@ TEST_CASE("kra_imp_load_file wrong file", "[archive]")
 TEST_CASE("kra_imp_load_file proper file", "[archive]")
 {
     std::array<char, 7> file_buffer{};
-    kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
+    kra_imp_archive_t* archive = kra_imp_open_archive(reinterpret_cast<const char*>(PROPER_ARCHIVE.data()), PROPER_ARCHIVE.size());
     const unsigned long long file_size = kra_imp_load_file(archive, PROPER_FILE_PATH.data(), file_buffer.data(), file_buffer.size());
     const std::string_view file_content(file_buffer.data(), file_size);
     REQUIRE(file_size == file_buffer.size());
