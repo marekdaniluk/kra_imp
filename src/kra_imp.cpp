@@ -90,7 +90,7 @@ KRA_IMP_API unsigned int kra_imp_get_version()
 
 KRA_IMP_API kra_imp_archive_t* kra_imp_open_archive(const char* archive_buffer, const unsigned long long archive_buffer_size)
 {
-    if (archive_buffer == nullptr || archive_buffer_size == 0UL)
+    if (archive_buffer == nullptr || archive_buffer_size == 0ULL)
     {
         return nullptr;
     }
@@ -120,20 +120,15 @@ KRA_IMP_API void kra_imp_close_archive(kra_imp_archive_t* archive)
 
 KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive, const char* file_path)
 {
-    if (archive == nullptr)
+    if (archive == nullptr || zip_entry_open(archive->_archive, file_path) != 0)
     {
-        return KRA_IMP_PARAMS_ERROR;
-    }
-
-    if (zip_entry_open(archive->_archive, file_path) != 0)
-    {
-        return KRA_IMP_ARCHIVE_ERROR;
+        return 0ULL;
     }
 
     const unsigned long long entry_size = zip_entry_size(archive->_archive);
     if (zip_entry_close(archive->_archive) != 0)
     {
-        return KRA_IMP_ARCHIVE_ERROR;
+        return 0ULL;
     }
 
     return entry_size;
@@ -141,20 +136,15 @@ KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive,
 
 KRA_IMP_API unsigned long long kra_imp_load_file(kra_imp_archive_t* archive, const char* file_path, char* file_buffer, const unsigned long long file_buffer_size)
 {
-    if (archive == nullptr || file_buffer_size == 0UL)
+    if (archive == nullptr || file_buffer_size == 0ULL || zip_entry_open(archive->_archive, file_path) != 0)
     {
-        return KRA_IMP_PARAMS_ERROR;
-    }
-
-    if (zip_entry_open(archive->_archive, file_path) != 0)
-    {
-        return KRA_IMP_ARCHIVE_ERROR;
+        return 0ULL;
     }
 
     const unsigned long long read_bytes = zip_entry_noallocread(archive->_archive, file_buffer, file_buffer_size);
     if (zip_entry_close(archive->_archive) != 0)
     {
-        return KRA_IMP_ARCHIVE_ERROR;
+        return 0ULL;
     }
 
     return read_bytes;
@@ -438,8 +428,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        const std::string_view tile_x_offset(&input[start_position], end_position - start_position);
-        if (std::from_chars(tile_x_offset.data(), tile_x_offset.data() + tile_x_offset.size(), *x_offset).ec != std::errc())
+        if (std::from_chars(&input[start_position], &input[end_position - start_position], *x_offset).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -451,8 +440,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        const std::string_view tile_y_offset(&input[start_position], end_position - start_position);
-        if (std::from_chars(tile_y_offset.data(), tile_y_offset.data() + tile_y_offset.size(), *y_offset).ec != std::errc())
+        if (std::from_chars(&input[start_position], &input[end_position - start_position], *y_offset).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -477,9 +465,8 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        const std::string_view tile_compressed_size(&input[start_position], end_position - start_position);
         unsigned int compressed_size = 0U;
-        if (std::from_chars(tile_compressed_size.data(), tile_compressed_size.data() + tile_compressed_size.size(), compressed_size).ec != std::errc())
+        if (std::from_chars(&input[start_position], &input[end_position - start_position], compressed_size).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }

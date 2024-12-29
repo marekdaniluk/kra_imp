@@ -87,7 +87,7 @@ TEST_CASE("kra_imp_open_archive invalid archive", "[archive]")
 TEST_CASE("kra_imp_get_file_size null archive", "[archive]")
 {
     const unsigned long long file_size = kra_imp_get_file_size(nullptr, PROPER_ARCHIVE.data());
-    REQUIRE(file_size == KRA_IMP_PARAMS_ERROR);
+    REQUIRE(file_size == 0ULL);
 }
 
 TEST_CASE("kra_imp_get_file_size wrong file", "[archive]")
@@ -95,7 +95,7 @@ TEST_CASE("kra_imp_get_file_size wrong file", "[archive]")
     kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
     REQUIRE(archive != nullptr);
     const unsigned long long file_size = kra_imp_get_file_size(archive, WRONG_FILE_PATH.data());
-    REQUIRE(file_size == KRA_IMP_ARCHIVE_ERROR);
+    REQUIRE(file_size == 0ULL);
     kra_imp_close_archive(archive);
 }
 
@@ -111,7 +111,7 @@ TEST_CASE("kra_imp_load_file null archive", "[archive]")
 {
     std::array<char, 7> file_buffer{};
     const unsigned long long file_size = kra_imp_load_file(nullptr, PROPER_FILE_PATH.data(), file_buffer.data(), file_buffer.size());
-    REQUIRE(file_size == KRA_IMP_PARAMS_ERROR);
+    REQUIRE(file_size == 0ULL);
 }
 
 TEST_CASE("kra_imp_load_file wrong file", "[archive]")
@@ -119,7 +119,7 @@ TEST_CASE("kra_imp_load_file wrong file", "[archive]")
     std::array<char, 7> file_buffer{};
     kra_imp_archive_t* archive = kra_imp_open_archive(PROPER_ARCHIVE.data(), PROPER_ARCHIVE.size());
     const unsigned long long file_size = kra_imp_load_file(archive, WRONG_FILE_PATH.data(), file_buffer.data(), file_buffer.size());
-    REQUIRE(file_size == KRA_IMP_ARCHIVE_ERROR);
+    REQUIRE(file_size == 0ULL);
     kra_imp_close_archive(archive);
 }
 
