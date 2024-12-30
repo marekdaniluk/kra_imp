@@ -354,29 +354,21 @@ std::string_view parse_header_element(const char* buffer, const unsigned long lo
         ++end_position;
     }
     const std::string_view current_hader_value(buffer + buffer_offset, end_position - buffer_offset);
+    buffer_offset = end_position + 1U;
     return current_hader_value;
 }
 
-bool get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, char& value)
+bool get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, unsigned int& value)
 {
     const std::string_view current_hader_value = parse_header_element(buffer, buffer_size, header, buffer_offset);
-    if (current_hader_value.empty() || std::from_chars(current_hader_value.data(), current_hader_value.data() + current_hader_value.size(), value).ec != std::errc())
+    if (current_hader_value.empty())
     {
         return false;
     }
 
-    return true;
-}
-
-kra_imp_error_code_e get_header_element(const char* buffer, const unsigned long long buffer_size, const std::string_view header, unsigned int& buffer_offset, unsigned int& value)
-{
-    const std::string_view current_hader_value = parse_header_element(buffer, buffer_size, header, buffer_offset);
-    if (current_hader_value.empty() || std::from_chars(current_hader_value.data(), current_hader_value.data() + current_hader_value.size(), value).ec != std::errc())
-    {
-        return KRA_IMP_FAIL;
-    }
-
-    return KRA_IMP_SUCCESS;
+    std::size_t position = 0;
+    value = std::stoul(current_hader_value.data(), &position);
+    return position == current_hader_value.size();
 }
 
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buffer, const unsigned long long buffer_size, kra_imp_layer_data_header_t* layer_data_header)
@@ -393,7 +385,8 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buff
         !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[1], layer_data_header->_header_size, layer_data_header->_layer_data_width) ||
         !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[2], layer_data_header->_header_size, layer_data_header->_layer_data_height) ||
         !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[3], layer_data_header->_header_size, layer_data_header->_layer_data_pixel_size) ||
-        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[4], layer_data_header->_header_size, layer_data_header->_layer_datas_count))
+        !get_header_element(buffer, buffer_size, KRA_IMP_HEADERS[4], layer_data_header->_header_size, layer_data_header->_layer_datas_count) ||
+        layer_data_header->_header_size > buffer_size)
     {
         return KRA_IMP_PARSE_ERROR;
     }
