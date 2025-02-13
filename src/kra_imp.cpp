@@ -41,7 +41,8 @@ static constexpr const pugi::char_t* KRA_IMP_TIME_ATTRIBUTE{ "time" };
 static constexpr const pugi::char_t* KRA_IMP_OFFSET_NODE{ "offset" };
 static constexpr const char KRA_IMP_EMPTY_CHAR{ '\0' };
 static constexpr const char KRA_IMP_END{ '\n' };
-static constexpr const char KRA_IMP_COMPRESSION_FLAG{ 1 };
+static constexpr const char KRA_IMP_UNCOMPRESSED_FLAG{ 0 };
+static constexpr const char KRA_IMP_COMPRESSED_FLAG{ 1 };
 static constexpr const char KRA_IMP_SEPARATOR{ ',' };
 static constexpr const char* KRA_IMP_COMPRESSION_TYPE{ "LZF" };
 static constexpr const unsigned char KRA_IMP_MAX_NAME_LENGTH{ 255 };
@@ -397,6 +398,11 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_header(const char* buff
 KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, unsigned int layer_data_tile_index, char* output,
                                                               const unsigned long long output_size, int* x_offset, int* y_offset)
 {
+    if (input == nullptr || input_size == 0ULL || output == nullptr || output_size == 0ULL || x_offset == nullptr || y_offset == nullptr)
+    {
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
     unsigned long long start_position = 0UL;
     unsigned long long end_position = 1UL;
 
@@ -421,7 +427,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        if (std::from_chars(&input[start_position], &input[end_position - start_position], *x_offset).ec != std::errc())
+        if (std::from_chars(&input[start_position], &input[end_position], *x_offset).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -433,7 +439,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
             return KRA_IMP_PARSE_ERROR;
         }
 
-        if (std::from_chars(&input[start_position], &input[end_position - start_position], *y_offset).ec != std::errc())
+        if (std::from_chars(&input[start_position], &input[end_position], *y_offset).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -459,7 +465,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
         }
 
         unsigned int compressed_size = 0U;
-        if (std::from_chars(&input[start_position], &input[end_position - start_position], compressed_size).ec != std::errc())
+        if (std::from_chars(&input[start_position], &input[end_position], compressed_size).ec != std::errc())
         {
             return KRA_IMP_PARSE_ERROR;
         }
@@ -468,16 +474,20 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
         end_position = start_position + 1UL;
         if (current_index == layer_data_tile_index)
         {
-            if (KRA_IMP_COMPRESSION_FLAG == input[start_position])
+            if (KRA_IMP_UNCOMPRESSED_FLAG == input[start_position])
+            {
+                std::memcpy(output, &input[start_position + 1UL], output_size);
+            }
+            else if (KRA_IMP_COMPRESSED_FLAG == input[start_position])
             {
                 if (lzf_decompress(&input[start_position + 1UL], compressed_size - 1U, output, output_size) != output_size)
                 {
-                    return KRA_IMP_LZF_ERROR;
+                    return KRA_IMP_DECOMPRESS_ERROR;
                 }
             }
             else
             {
-                std::memcpy(output, &input[start_position + 1UL], output_size);
+                return KRA_IMP_DECOMPRESS_ERROR;
             }
 
             return KRA_IMP_SUCCESS;
