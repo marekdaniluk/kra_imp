@@ -33,11 +33,11 @@ extern "C"
      */
     typedef enum kra_imp_error_code_e
     {
-        KRA_IMP_FAIL = 0,          /**< Indicates the generic operation failed. */
-        KRA_IMP_SUCCESS = 1,       /**< Indicates that the operation completed successfully. */
-        KRA_IMP_PARAMS_ERROR = -1, /**< Indicates operation failed due the invalid param(s). */
-        KRA_IMP_PARSE_ERROR = -2,  /**< Indicates that the parse operation failed. */
-        KRA_IMP_LZF_ERROR = -3,    /**< Indicates that the lzf decompress operation failed. */
+        KRA_IMP_FAIL = 0,                   /**< Indicates the generic operation failed. */
+        KRA_IMP_SUCCESS = 1,                /**< Indicates that the operation completed successfully. */
+        KRA_IMP_PARAMS_ERROR = -1,          /**< Indicates operation failed due the invalid param(s). */
+        KRA_IMP_PARSE_ERROR = -2,           /**< Indicates that the parse operation failed. */
+        KRA_IMP_DECOMPRESS_ERROR = -3,      /**< Indicates that the decompress operation failed. */
     } kra_imp_error_code_e;
     /**
      * @ingroup kra_imp
