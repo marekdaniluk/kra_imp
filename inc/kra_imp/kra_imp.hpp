@@ -225,23 +225,46 @@ extern "C"
     /**
      * @ingroup kra_imp
      *
-     * @brief Converts a linear color buffer to BGRA format.
+     * @brief Converts a linear color buffer with an alpha channel to BGRA format.
      *
      * @details
-     * Transforms a linear color representation in the input buffer to BGRA format in the output buffer.
-     * This function supports offsets and different input/output widths for flexible processing.
+     * This function transforms a linear color representation in the input buffer to BGRA format in the output buffer.
+     * The input and output buffers are expected to have the same dimensions.
      *
      * @param[in] input Linear color buffer to convert.
-     * @param[in] buffer_size Size of the input buffer in bytes.
      * @param[out] output Buffer to store the converted BGRA data.
-     * @param[in] x_offset Horizontal offset for the output data.
-     * @param[in] y_offset Vertical offset for the output data.
-     * @param[in] input_width Width of the input data.
-     * @param[in] output_width Width of the output data.
-     * @param[in] pixel_size Size of a single pixel in bytes.
+     * @param[in] buffer_size Size of the input and output buffers in bytes.
+     * @param[in] input_width Width of the input and output buffers in pixels.
+     * 
+     * @return KRA_IMP_SUCCESS if the conversion was successful, or other `kra_imp_error_code_e` on failure.
      */
-    KRA_IMP_API void kra_imp_delinearize_to_bgra(const char* input, const unsigned long long buffer_size, char* output, const unsigned int x_offset, const unsigned int y_offset,
-                                                 const unsigned int input_width, const unsigned int output_width, const unsigned char pixel_size);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra(const char* input, char* output, const unsigned long long buffer_size, const unsigned int width);
+    /**
+     * @ingroup kra_imp
+     *
+     * @brief Converts a linear color buffer with an alpha channel to BGRA format with an offset.
+     *
+     * @details
+     * This function transforms a linear color representation in the input buffer to BGRA format in the output buffer.
+     * It supports offsets and different input/output widths for flexible processing while maintaining the original image dimensions.
+     *
+     * @param[in] input Linear color buffer to convert.
+     * @param[in] input_size Size of the input buffer in bytes.
+     * @param[in] input_width Width of the input data in pixels.
+     * @param[out] output Buffer to store the converted BGRA data.
+     * @param[in] output_size Size of the output buffer in bytes.
+     * @param[in] output_width Width of the output data in pixels.
+     * @param[in] output_offset Offset for the output buffer data where to start conversion in bytes.
+     *
+     * @return KRA_IMP_SUCCESS if the conversion was successful, or other `kra_imp_error_code_e` on failure.
+     *
+     * @note Ensure that the output buffer is large enough to hold the converted data to avoid buffer overflow.
+     * The size of the output buffer should be at least (output_width * height * 4) bytes, where height is derived
+     * from input_size / (input_width * 4). 4 stands for pixel size in bytes (BGRA).
+     */
+    KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra_with_offset(const char* input, const unsigned long long input_size, const unsigned int input_width, char* output,
+                                                                             const unsigned long long output_size, const unsigned int output_width,
+                                                                             const unsigned long long output_offset);
 #ifdef __cplusplus
 }
 #endif
