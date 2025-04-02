@@ -1,6 +1,7 @@
 ﻿add_executable(kra_imp_test
 	test.cpp
 	archive_tests.cpp
+	delinearize_tests.cpp
 	image_frames_tests.cpp
 	image_layer_tests.cpp
 	main_doc_tests.cpp
