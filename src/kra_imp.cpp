@@ -499,12 +499,24 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
     return KRA_IMP_FAIL;
 }
 
-KRA_IMP_API void kra_imp_delinearize_to_bgra(const char* input, const unsigned long long buffer_size, char* output, const unsigned int x_offset, const unsigned int y_offset,
-                                             const unsigned int input_width, const unsigned int output_width, const unsigned char pixel_size)
+KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra(const char* input, char* output, const unsigned long long buffer_size, const unsigned int width)
 {
-    const unsigned long long input_rows = buffer_size / (pixel_size * input_width);
-    const unsigned long long pixels = buffer_size / pixel_size;
-    unsigned long long output_idx = y_offset * output_width * pixel_size + x_offset * pixel_size;
+    return kra_imp_delinearize_to_bgra_with_offset(input, buffer_size, width, output, buffer_size, width, 0ULL);
+}
+
+KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra_with_offset(const char* input, const unsigned long long input_size, const unsigned int input_width, char* output,
+                                                                         const unsigned long long output_size, const unsigned int output_width,
+                                                                         const unsigned long long output_offset)
+{
+    if (input == nullptr || input_size == 0ULL || output == nullptr || output_size == 0ULL || output_width < input_width || (output_size - output_offset) < input_size)
+    {
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    static constexpr unsigned char pixel_size = 4;
+    const unsigned long long input_rows = input_size / (pixel_size * input_width);
+    const unsigned long long pixels_to_delineearize = input_size / pixel_size;
+    unsigned long long output_idx = output_offset;
     for (unsigned long long y = 0UL; y < input_rows; ++y)
     {
         for (unsigned long long x = 0UL; x < input_width; ++x)
@@ -513,10 +525,12 @@ KRA_IMP_API void kra_imp_delinearize_to_bgra(const char* input, const unsigned l
             for (unsigned char channel_index = 0; channel_index < pixel_size; ++channel_index)
             {
                 unsigned long long output_channel_idx = output_idx + (x * pixel_size) + channel_index;
-                unsigned long long input_channel_idx = channel_index * pixels + input_idx;
+                unsigned long long input_channel_idx = channel_index * pixels_to_delineearize + input_idx;
                 output[output_channel_idx] = input[input_channel_idx];
             }
         }
         output_idx += output_width * pixel_size;
     }
+
+    return KRA_IMP_SUCCESS;
 }
