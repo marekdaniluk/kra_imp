@@ -65,6 +65,11 @@ constexpr const std::string_view GROUP_MAIN_DOC_XML = R"(
 	   <layer name="group" x="0" passthrough="0" nodetype="grouplayer" y="0" visible="0" compositeop="normal" intimeline="0" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer1" channelflags="" uuid="{2a16ae40-0a0b-4f13-b470-8a43c1ad1265}">
 	    <layers>
 	     <layer name="sublayer" colorspacename="RGBA" onionskin="0" x="0" nodetype="paintlayer" y="0" channellockflags="1111" visible="1" compositeop="normal" intimeline="1" locked="0" collapsed="0" colorlabel="0" opacity="255" filename="layer2" channelflags="" uuid="{5ff215e2-855a-44c5-916d-9e06d53cff4d}"/>
+	     <layer name="cloneLayer" nodetype="cloneLayer"/>
+	     <layer name="colorizemask" nodetype="colorizemask"/>
+	     <layer name="filelayer" nodetype="filelayer"/>
+	     <layer name="transformmask" nodetype="transformmask"/>
+	     <layer name="transparencymask" nodetype="transparencymask"/>
 	    </layers>
 	   </layer>
 	  </layers>
@@ -173,4 +178,25 @@ TEST_CASE("kra_imp_read_image_layer with a grouped layers", "[image_layer]")
     REQUIRE(std::strcmp(image_layer._file_name, "layer2") == 0);
     REQUIRE(std::strcmp(image_layer._frame_file_name, "") == 0);
     REQUIRE(std::strcmp(image_layer._name, "sublayer") == 0);
+}
+
+TEST_CASE("kra_imp_read_image_layer read layer types", "[image_layer]")
+{
+    kra_imp_image_layer_t image_layer;
+    kra_imp_error_code_e result = kra_imp_read_image_layer(GROUP_MAIN_DOC_XML.data(), GROUP_MAIN_DOC_XML.size(), 2U, &image_layer);
+    REQUIRE(result == KRA_IMP_SUCCESS);
+    REQUIRE(image_layer._type == KRA_IMP_CLONE_LAYER_TYPE);
+    REQUIRE(image_layer._parent_index == 0L);
+    result = kra_imp_read_image_layer(GROUP_MAIN_DOC_XML.data(), GROUP_MAIN_DOC_XML.size(), 3U, &image_layer);
+    REQUIRE(result == KRA_IMP_SUCCESS);
+    REQUIRE(image_layer._type == KRA_IMP_COLORIZEMASK_LAYER_TYPE);
+    result = kra_imp_read_image_layer(GROUP_MAIN_DOC_XML.data(), GROUP_MAIN_DOC_XML.size(), 4U, &image_layer);
+    REQUIRE(result == KRA_IMP_SUCCESS);
+    REQUIRE(image_layer._type == KRA_IMP_FILE_LAYER_TYPE);
+    result = kra_imp_read_image_layer(GROUP_MAIN_DOC_XML.data(), GROUP_MAIN_DOC_XML.size(), 5U, &image_layer);
+    REQUIRE(result == KRA_IMP_SUCCESS);
+    REQUIRE(image_layer._type == KRA_IMP_TRANSFORMMASK_LAYER_TYPE);
+    result = kra_imp_read_image_layer(GROUP_MAIN_DOC_XML.data(), GROUP_MAIN_DOC_XML.size(), 6U, &image_layer);
+    REQUIRE(result == KRA_IMP_SUCCESS);
+    REQUIRE(image_layer._type == KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE);
 }

@@ -54,32 +54,38 @@ struct kra_imp_archive_t
 
 kra_imp_layer_type_e to_layer_type(const std::string_view string)
 {
-    static constexpr const std::array<std::string_view, 7> NODE_STRINGS{
-        "grouplayer", "paintlayer", "cloneLayer", "colorizemask", "filelayer", "transformmask", "transparencymask"
-    };
-
-    for (unsigned char i = 0; i < NODE_STRINGS.size(); ++i)
-    {
-        if (NODE_STRINGS[i].compare(string) == 0)
-        {
-            return static_cast<kra_imp_layer_type_e>(i + 1);
-        }
-    }
+    if (string == "grouplayer")
+        return KRA_IMP_GROUP_LAYER_TYPE;
+    if (string == "paintlayer")
+        return KRA_IMP_PAINT_LAYER_TYPE;
+    if (string == "cloneLayer")
+        return KRA_IMP_CLONE_LAYER_TYPE;
+    if (string == "colorizemask")
+        return KRA_IMP_COLORIZEMASK_LAYER_TYPE;
+    if (string == "filelayer")
+        return KRA_IMP_FILE_LAYER_TYPE;
+    if (string == "transformmask")
+        return KRA_IMP_TRANSFORMMASK_LAYER_TYPE;
+    if (string == "transparencymask")
+        return KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE;
 
     return KRA_IMP_UNKNOWN_LAYER_TYPE;
 }
 
 kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
 {
-    static constexpr const std::array<std::string_view, 6> MODEL_STRINGS{ "LABA", "CMYK", "GRAYA", "RGBA", "XYZA", "YCBCRA" };
-
-    for (unsigned char i = 0; i < MODEL_STRINGS.size(); ++i)
-    {
-        if (string.find(MODEL_STRINGS[i]) != std::string::npos)
-        {
-            return static_cast<kra_imp_color_space_model_e>(i + 1);
-        }
-    }
+    if (string.find("LABA") != std::string::npos)
+        return KRA_IMP_CIELAB_COLOR_SPACE_MODEL;
+    if (string.find("CMYK") != std::string::npos)
+        return KRA_IMP_CMYK_COLOR_SPACE_MODEL;
+    if (string.find("GRAYA") != std::string::npos)
+        return KRA_IMP_GRAYA_COLOR_SPACE_MODEL;
+    if (string.find("RGBA") != std::string::npos)
+        return KRA_IMP_RGBA_COLOR_SPACE_MODEL;
+    if (string.find("XYZA") != std::string::npos)
+        return KRA_IMP_XYZA_COLOR_SPACE_MODEL;
+    if (string.find("YCBCRA") != std::string::npos)
+        return KRA_IMP_YCBCR_COLOR_SPACE_MODEL;
 
     return KRA_IMP_UNKNOWN_COLOR_SPACE_MODEL;
 }
