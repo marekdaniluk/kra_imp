@@ -10,6 +10,8 @@
 #include <charconv>
 #include <cstring>
 #include <functional>
+#include <string>
+#include <string_view>
 #include <pugixml.hpp>
 #include <zip.h>
 
