@@ -1,0 +1,11 @@
+﻿find_package(Doxygen)
+
+IF(NOT DOXYGEN_FOUND)
+    message(STATUS "No Doxygen found. Documentation won't be built")
+ELSE()
+	set(DOXYGEN_INPUT ${PROJECT_SOURCE_DIR}/docs/Doxyfile.in)
+	set(DOXYGEN_OUTPUT ${PROJECT_BINARY_DIR}/docs/Doxyfile)
+	set(DOXYGEN_CONFIGURED_INPUT ${DOXYGEN_OUTPUT_DIR})
+    configure_file(${DOXYGEN_INPUT} ${DOXYGEN_OUTPUT} @ONLY)
+    add_custom_target(docs ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUTPUT} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMENT "Generating documentation with Doxygen for kra_imp library" VERBATIM)
+ENDIF()

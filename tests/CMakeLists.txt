@@ -12,7 +12,7 @@
 target_link_libraries(kra_imp_test
 	PRIVATE
 	Catch2::Catch2WithMain
-	kra_imp
+	kra_imp::static
 )
 
 include(CTest)
