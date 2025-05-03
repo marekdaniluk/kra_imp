@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.22)
+﻿cmake_minimum_required (VERSION 3.28)
 
 project (kra_imp VERSION 0.1.1 LANGUAGES C CXX)
 
@@ -6,9 +6,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+find_package(pugixml QUIET)
+if(NOT pugixml_FOUND)
+	add_subdirectory(pugixml)
+endif()
+
+find_package(zip QUIET)
+if(NOT zip_FOUND)
+	add_subdirectory(zip)
+endif()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
-               ${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
-               @ONLY
+	${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
+	@ONLY
 )
 
 option(KRA_IMP_BUILD_DOCS "Generate documentation with Doxygen for kra_imp library" ON)
@@ -39,8 +49,8 @@ foreach(target kra_imp_shared kra_imp_static)
 	
 	target_link_libraries(${target}
 		PRIVATE
-		pugixml
-		zip
+		pugixml::pugixml
+		zip::zip
 	)
 endforeach()
 
@@ -52,6 +62,9 @@ set_target_properties(kra_imp_static PROPERTIES OUTPUT_NAME kra_imp_static)
 
 add_library(kra_imp::shared ALIAS kra_imp_shared)
 add_library(kra_imp::static ALIAS kra_imp_static)
+
+set_property(TARGET kra_imp_shared PROPERTY EXPORT_NAME shared)
+set_property(TARGET kra_imp_static PROPERTY EXPORT_NAME static)
 
 install(DIRECTORY inc/kra_imp DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp DESTINATION include)
@@ -88,9 +101,6 @@ install(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/kra_impConfigVersion.cmake
 	DESTINATION lib/cmake/kra_imp
 )
-
-add_subdirectory(pugixml)
-add_subdirectory(zip)
 
 if (BUILD_TESTING)
 	enable_testing()
