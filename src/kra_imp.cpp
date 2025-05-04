@@ -220,7 +220,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_main_doc(const char* xml_buffer, c
     const pugi::xpath_node animation_xnode = main_doc_xml_document.select_node(KRA_IMP_DOC_ANIMATION_NODE);
     parse_animation(animation_xnode.node(), main_doc->_animation);
     std::memset(main_doc->_image_name, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
-    strcpy_s(main_doc->_image_name, KRA_IMP_MAX_NAME_LENGTH - 1, image_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
+    strncpy_s(main_doc->_image_name, KRA_IMP_MAX_NAME_LENGTH, image_node.attribute(KRA_IMP_NAME_ATTRIBUTE).value(), KRA_IMP_MAX_NAME_LENGTH - 1);
     const pugi::char_t* color_space_attribute = image_node.attribute(KRA_IMP_COLOR_SPACE_NAME_ATTRIBUTE).value();
     main_doc->_color_space_model = to_color_space_model(std::string_view(color_space_attribute));
     main_doc->_width = image_node.attribute(KRA_IMP_WIDTH_ATTRIBUTE).as_ullong();
@@ -244,9 +244,9 @@ bool read_image_layer_recursive(const unsigned int layer_index, kra_imp_image_la
         image_layer->_opacity = static_cast<unsigned char>(node.attribute(KRA_IMP_OPACITY_ATTRIBUTE).as_uint());
         image_layer->_visibility = static_cast<kra_imp_layer_visibility_e>(node.attribute(KRA_IMP_VISIBLE_ATTRIBUTE).as_int());
         image_layer->_parent_index = parent_index;
-        strcpy_s(image_layer->_file_name, KRA_IMP_MAX_NAME_LENGTH - 1, node.attribute(KRA_IMP_FILE_NAME_ATTRIBUTE).value());
-        strcpy_s(image_layer->_name, KRA_IMP_MAX_NAME_LENGTH - 1, node.attribute(KRA_IMP_NAME_ATTRIBUTE).value());
-        strcpy_s(image_layer->_frame_file_name, KRA_IMP_MAX_NAME_LENGTH - 1, node.attribute(KRA_IMP_KEY_FRAMES_ATTRIBUTE).value());
+        strncpy_s(image_layer->_file_name, KRA_IMP_MAX_NAME_LENGTH, node.attribute(KRA_IMP_FILE_NAME_ATTRIBUTE).value(), KRA_IMP_MAX_NAME_LENGTH - 1);
+        strncpy_s(image_layer->_name, KRA_IMP_MAX_NAME_LENGTH, node.attribute(KRA_IMP_NAME_ATTRIBUTE).value(), KRA_IMP_MAX_NAME_LENGTH - 1);
+        strncpy_s(image_layer->_frame_file_name, KRA_IMP_MAX_NAME_LENGTH, node.attribute(KRA_IMP_KEY_FRAMES_ATTRIBUTE).value(), KRA_IMP_MAX_NAME_LENGTH - 1);
         return true;
     }
 
@@ -345,7 +345,7 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_image_key_frame(const char* xml_bu
     image_key_frame->_x = offset_node.attribute(KRA_IMP_X_ATTRIBUTE).as_int();
     image_key_frame->_y = offset_node.attribute(KRA_IMP_Y_ATTRIBUTE).as_int();
     std::memset(image_key_frame->_frame, KRA_IMP_EMPTY_CHAR, KRA_IMP_MAX_NAME_LENGTH);
-    strcpy_s(image_key_frame->_frame, KRA_IMP_MAX_NAME_LENGTH - 1, xml_node.attribute(KRA_IMP_FRAME_ATTRIBUTE).value());
+    strncpy_s(image_key_frame->_frame, KRA_IMP_MAX_NAME_LENGTH, xml_node.attribute(KRA_IMP_FRAME_ATTRIBUTE).value(), KRA_IMP_MAX_NAME_LENGTH - 1);
     return KRA_IMP_SUCCESS;
 }
 
