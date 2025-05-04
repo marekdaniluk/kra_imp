@@ -235,7 +235,7 @@ extern "C"
      * @param[out] output Buffer to store the converted BGRA data.
      * @param[in] buffer_size Size of the input and output buffers in bytes.
      * @param[in] input_width Width of the input and output buffers in pixels.
-     * 
+     *
      * @return KRA_IMP_SUCCESS if the conversion was successful, or other `kra_imp_error_code_e` on failure.
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra(const char* input, char* output, const unsigned long long buffer_size, const unsigned int width);
