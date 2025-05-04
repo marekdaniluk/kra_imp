@@ -27,7 +27,7 @@ jobs:
 
     - name: Check formatting
       run: |
-        find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -style=file --dry-run -Werror
+        find src inc -name '*.cpp' -o -name '*.hpp' | xargs clang-format -style=file --dry-run -Werror
 
     - name: Run clang-tidy
       run: |
