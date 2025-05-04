@@ -10,9 +10,9 @@
 #include <charconv>
 #include <cstring>
 #include <functional>
+#include <pugixml.hpp>
 #include <string>
 #include <string_view>
-#include <pugixml.hpp>
 #include <zip.h>
 
 static constexpr const char* KRA_IMP_MAIN_DOC_FILE_NAME{ "maindoc.xml" };
