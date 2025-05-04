@@ -21,7 +21,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
 	@ONLY
 )
 
-option(KRA_IMP_BUILD_DOCS "Generate documentation with Doxygen for kra_imp library" ON)
+option(KRA_IMP_BUILD_DOCS "Generate documentation with Doxygen for kra_imp library" OFF)
 
 add_library(kra_imp_shared SHARED)
 add_library(kra_imp_static STATIC)
