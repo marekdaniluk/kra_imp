@@ -8,8 +8,10 @@
 #include "lzf/lzf.h"
 #include <array>
 #include <charconv>
+#include <cstring>
 #include <functional>
 #include <pugixml.hpp>
+#include <string.h>
 #include <string>
 #include <string_view>
 #include <zip.h>
