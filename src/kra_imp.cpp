@@ -505,6 +505,109 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input,
     return KRA_IMP_FAIL;
 }
 
+KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data(const char* buffer, const unsigned long long buffer_size, const unsigned int data_index,
+                                                         kra_imp_layer_output_data_t* output)
+{
+    if (buffer == nullptr || buffer_size == 0ULL || output == nullptr || output->_buffer == nullptr || output->_buffer_size == 0ULL)
+    {
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    unsigned long long start_position = 0UL;
+    unsigned long long end_position = 1UL;
+
+    auto separator_splitter = [buffer, buffer_size](unsigned long long& end_position)
+    {
+        while (buffer_size > end_position)
+        {
+            if (buffer[end_position] == KRA_IMP_SEPARATOR || buffer[end_position] == KRA_IMP_END)
+            {
+                return true;
+            }
+            ++end_position;
+        }
+
+        return false;
+    };
+    unsigned int current_index = 0U;
+    while (end_position < buffer_size)
+    {
+        if (!separator_splitter(end_position))
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        if (std::from_chars(&buffer[start_position], &buffer[end_position], output->_x_offset).ec != std::errc())
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        start_position = end_position + 1UL;
+        end_position = start_position + 1UL;
+        if (!separator_splitter(end_position))
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        if (std::from_chars(&buffer[start_position], &buffer[end_position], output->_y_offset).ec != std::errc())
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        start_position = end_position + 1UL;
+        end_position = start_position + 1UL;
+        if (!separator_splitter(end_position))
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        const std::string_view tile_compression_type(&buffer[start_position], end_position - start_position);
+        if (tile_compression_type.compare(KRA_IMP_COMPRESSION_TYPE) != 0)
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        start_position = end_position + 1UL;
+        end_position = start_position + 1UL;
+        if (!separator_splitter(end_position))
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        unsigned int compressed_size = 0U;
+        if (std::from_chars(&buffer[start_position], &buffer[end_position], compressed_size).ec != std::errc())
+        {
+            return KRA_IMP_PARSE_ERROR;
+        }
+
+        start_position = end_position + 1UL;
+        if (current_index == data_index)
+        {
+            if (KRA_IMP_UNCOMPRESSED_FLAG == buffer[start_position])
+            {
+                std::memcpy(output->_buffer, &buffer[start_position + 1UL], output->_buffer_size);
+            }
+            else if (KRA_IMP_COMPRESSED_FLAG == buffer[start_position])
+            {
+                if (lzf_decompress(&buffer[start_position + 1UL], compressed_size - 1U, output->_buffer, output->_buffer_size) != output->_buffer_size)
+                {
+                    return KRA_IMP_DECOMPRESS_ERROR;
+                }
+            }
+            else
+            {
+                return KRA_IMP_DECOMPRESS_ERROR;
+            }
+
+            return KRA_IMP_SUCCESS;
+        }
+        start_position += compressed_size;
+        end_position = start_position + 1UL;
+        ++current_index;
+    }
+    return KRA_IMP_FAIL;
+}
+
 KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra(const char* input, char* output, const unsigned long long buffer_size, const unsigned int width)
 {
     return kra_imp_delinearize_to_bgra_with_offset(input, buffer_size, width, output, buffer_size, width, 0ULL);
@@ -536,6 +639,42 @@ KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra_with_offset(const c
             }
         }
         output_idx += output_width * pixel_size;
+    }
+
+    return KRA_IMP_SUCCESS;
+}
+
+KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_with_offset(const char* input, const unsigned long long input_size, const unsigned int input_width,
+                                                                 kra_imp_delinerize_output_t* output)
+{
+    if (input == nullptr || input_size == 0ULL || output == nullptr)
+    {
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    char* output_buffer = output->_buffer;
+    if (output_buffer == nullptr || output->_buffer_size == 0ULL || output->_width < input_width || (output->_buffer_size - output->_offset) < input_size)
+    {
+        return KRA_IMP_PARAMS_ERROR;
+    }
+
+    static constexpr unsigned char pixel_size = 4;
+    const unsigned long long input_rows = input_size / (pixel_size * input_width);
+    const unsigned long long pixels_to_delineearize = input_size / pixel_size;
+    unsigned long long output_idx = output->_offset;
+    for (unsigned long long y = 0UL; y < input_rows; ++y)
+    {
+        for (unsigned long long x = 0UL; x < input_width; ++x)
+        {
+            unsigned long long input_idx = y * input_width + x;
+            for (unsigned char channel_index = 0; channel_index < pixel_size; ++channel_index)
+            {
+                unsigned long long output_channel_idx = output_idx + (x * pixel_size) + channel_index;
+                unsigned long long input_channel_idx = channel_index * pixels_to_delineearize + input_idx;
+                output_buffer[output_channel_idx] = input[input_channel_idx];
+            }
+        }
+        output_idx += output->_width * pixel_size;
     }
 
     return KRA_IMP_SUCCESS;
