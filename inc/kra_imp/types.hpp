@@ -213,6 +213,49 @@ extern "C"
         unsigned int _version;               /**< Version of the layer data format. */
     };
     typedef struct kra_imp_layer_data_header_t kra_imp_layer_data_header_t;
+    /**
+     * @struct kra_imp_layer_output_data_t
+     *
+     * @brief Represents the output data of a layer's tile in a KRA archive.
+     *
+     * @details
+     * This structure holds the buffer for a layer's output data,
+     * including its size and positional offsets. It is used to store and manage
+     * the processed data of a layer after reading or transformation operations.
+     *
+     * @note The `_buffer` field points to the memory containing the layer's data,
+     * and the offsets (`_x_offset` and `_y_offset`) specify the position of the
+     * data within the overall image.
+     */
+    struct KRA_IMP_API kra_imp_layer_output_data_t
+    {
+        char* _buffer;                   /**< Pointer to the buffer containing the layer's data. */
+        unsigned long long _buffer_size; /**< Size of the buffer in bytes. */
+        int _x_offset;                   /**< Horizontal offset of the layer's data in the image. */
+        int _y_offset;                   /**< Vertical offset of the layer's data in the image. */
+    };
+    typedef struct kra_imp_layer_output_data_t kra_imp_layer_output_data_t;
+    /**
+     * @struct kra_imp_delinerize_output_t
+     *
+     * @brief Represents the output data of a delinearization operation.
+     *
+     * @details
+     * This structure stores the buffer for the output of a BGRA delinearization
+     * operation, including the buffer size, offset, and width. It is used to manage
+     * the converted data after transforming a linear color buffer to a BGRA format.
+     *
+     * @note The `_buffer` field contains the converted data, and the `_offset` and `_width`
+     * fields provide additional data for interpreting the output.
+     */
+    struct KRA_IMP_API kra_imp_delinerize_output_t
+    {
+        char* _buffer;                   /**< Pointer to the buffer containing the delinearized data. */
+        unsigned long long _buffer_size; /**< Size of the buffer in bytes. */
+        unsigned long long _offset;      /**< Offset in the buffer in bytes where the data starts. */
+        unsigned int _width;             /**< Width of the data in pixels. */
+    };
+    typedef struct kra_imp_delinerize_output_t kra_imp_delinerize_output_t;
 #ifdef __cplusplus
 }
 #endif

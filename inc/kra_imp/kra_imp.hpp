@@ -210,6 +210,8 @@ extern "C"
      * Reads and parses a specific tile of layer data, identified by its tile index.
      * The tile data is stored in the provided buffer, and its offset is also populated.
      *
+     * @deprecated This function is deprecated. Use `kra_imp_read_layer_data` instead.
+     *
      * @param[in] input Pointer to the input buffer containing layer data.
      * @param[in] input_size Size of the input buffer in bytes.
      * @param[in] layer_data_tile_index Index of the tile to read.
@@ -222,6 +224,27 @@ extern "C"
      */
     KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data_tile(const char* input, const unsigned long long input_size, const unsigned int layer_data_tile_index, char* output,
                                                                   const unsigned long long output_size, int* x_offset, int* y_offset);
+    /**
+     * @ingroup kra_imp
+     *
+     * @brief Reads and parses layer data.
+     *
+     * @details
+     * This function reads and parses layer data from the provided buffer. It supports reading
+     * data for a specific index and populates the provided `kra_imp_layer_output_data_t` structure
+     * with the parsed data, including the buffer, offsets, and size.
+     *
+     * @param[in] buffer Memory buffer containing the layer data.
+     * @param[in] buffer_size Size of the buffer in bytes.
+     * @param[in] data_index Index of the layer data to read.
+     * @param[out] output Pointer to the `kra_imp_layer_output_data_t` structure where the parsed data will be stored.
+     *
+     * @return KRA_IMP_SUCCESS if the layer data was successfully read, or other `kra_imp_error_code_e` on failure.
+     *
+     * @note This function is the recommended replacement for `kra_imp_read_layer_data_tile`.
+     */
+    KRA_IMP_API kra_imp_error_code_e kra_imp_read_layer_data(const char* buffer, const unsigned long long buffer_size, const unsigned int data_index,
+                                                             kra_imp_layer_output_data_t* output);
     /**
      * @ingroup kra_imp
      *
@@ -248,6 +271,8 @@ extern "C"
      * This function transforms a linear color representation in the input buffer to BGRA format in the output buffer.
      * It supports offsets and different input/output widths for flexible processing while maintaining the original image dimensions.
      *
+     * @deprecated This function is deprecated. Use `kra_imp_delinearize` instead.
+     *
      * @param[in] input Linear color buffer to convert.
      * @param[in] input_size Size of the input buffer in bytes.
      * @param[in] input_width Width of the input data in pixels.
@@ -265,6 +290,29 @@ extern "C"
     KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_to_bgra_with_offset(const char* input, const unsigned long long input_size, const unsigned int input_width, char* output,
                                                                              const unsigned long long output_size, const unsigned int output_width,
                                                                              const unsigned long long output_offset);
+    /**
+     * @ingroup kra_imp
+     *
+     * @brief Converts a linear color buffer to BGRA output with an offset.
+     *
+     * @details
+     * This function processes a linear color buffer and converts it to a specified output format.
+     * It supports offsets and different input/output widths for flexible processing while maintaining
+     * the original image dimensions. The output is stored in a `kra_imp_delinerize_output_t` structure.
+     *
+     * @param[in] input Linear color buffer to convert.
+     * @param[in] input_size Size of the input buffer in bytes.
+     * @param[in] input_width Width of the input data in pixels.
+     * @param[out] output Pointer to the `kra_imp_delinerize_output_t` structure where the converted data will be stored.
+     *
+     * @return KRA_IMP_SUCCESS if the conversion was successful, or other `kra_imp_error_code_e` on failure.
+     *
+     * @note Ensure that the `output` structure is properly initialized before calling this function.
+     * The size of the output buffer should be at least (output_width * height * 4) bytes, where height is derived
+     * from input_size / (input_width * 4). 4 stands for pixel size in bytes (BGRA).
+     */
+    KRA_IMP_API kra_imp_error_code_e kra_imp_delinearize_with_offset(const char* input, const unsigned long long input_size, const unsigned int input_width,
+                                                                     kra_imp_delinerize_output_t* output);
 #ifdef __cplusplus
 }
 #endif
