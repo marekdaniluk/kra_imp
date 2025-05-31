@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <kra_imp/config.hpp>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -30,7 +31,7 @@ extern "C"
      * The returned pointer must be compatible with the corresponding deallocation function.
      *
      * @param size The number of bytes to allocate.
-     * @return Pointer to the allocated memory block, or nullptr if allocation fails.
+     * @return Pointer to the allocated memory block, or NULL (nullptr) if allocation fails.
      */
     typedef void* (*kra_imp_allocation_function)(size_t size);
     /**
