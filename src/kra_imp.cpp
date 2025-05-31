@@ -54,39 +54,54 @@ struct kra_imp_archive_t
     zip_t* _archive{ nullptr };
 };
 
-kra_imp_layer_type_e to_layer_type(const std::string_view string)
+constexpr kra_imp_layer_type_e to_layer_type(const std::string_view string)
 {
-    if (string == "grouplayer")
-        return KRA_IMP_GROUP_LAYER_TYPE;
-    if (string == "paintlayer")
-        return KRA_IMP_PAINT_LAYER_TYPE;
-    if (string == "cloneLayer")
+    constexpr std::string_view CLONE_LAYER = "cloneLayer";
+    constexpr std::string_view COLORIZE_MASK = "colorizemask";
+    constexpr std::string_view FILE_LAYER = "filelayer";
+    constexpr std::string_view GROUP_LAYER = "grouplayer";
+    constexpr std::string_view PAINT_LAYER = "paintlayer";
+    constexpr std::string_view TRANSFORM_MASK = "transformmask";
+    constexpr std::string_view TRANSPARENCY_MASK = "transparencymask";
+
+    if (string == CLONE_LAYER)
         return KRA_IMP_CLONE_LAYER_TYPE;
-    if (string == "colorizemask")
+    if (string == COLORIZE_MASK)
         return KRA_IMP_COLORIZEMASK_LAYER_TYPE;
-    if (string == "filelayer")
+    if (string == FILE_LAYER)
         return KRA_IMP_FILE_LAYER_TYPE;
-    if (string == "transformmask")
+    if (string == GROUP_LAYER)
+        return KRA_IMP_GROUP_LAYER_TYPE;
+    if (string == PAINT_LAYER)
+        return KRA_IMP_PAINT_LAYER_TYPE;
+    if (string == TRANSFORM_MASK)
         return KRA_IMP_TRANSFORMMASK_LAYER_TYPE;
-    if (string == "transparencymask")
+    if (string == TRANSPARENCY_MASK)
         return KRA_IMP_TRANSPARENCYMASK_LAYER_TYPE;
 
     return KRA_IMP_UNKNOWN_LAYER_TYPE;
 }
 
-kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
+constexpr kra_imp_color_space_model_e to_color_space_model(const std::string_view string)
 {
-    if (string.find("LABA") != std::string::npos)
+    constexpr std::string_view LABA_MODEL = "LABA";
+    constexpr std::string_view CMYK_MODEL = "CMYK";
+    constexpr std::string_view GRAYA_MODEL = "GRAYA";
+    constexpr std::string_view RGBA_MODEL = "RGBA";
+    constexpr std::string_view XYZA_MODEL = "XYZA";
+    constexpr std::string_view YCBCRA_MODEL = "YCBCRA";
+
+    if (string.find(LABA_MODEL) != std::string::npos)
         return KRA_IMP_CIELAB_COLOR_SPACE_MODEL;
-    if (string.find("CMYK") != std::string::npos)
+    if (string.find(CMYK_MODEL) != std::string::npos)
         return KRA_IMP_CMYK_COLOR_SPACE_MODEL;
-    if (string.find("GRAYA") != std::string::npos)
+    if (string.find(GRAYA_MODEL) != std::string::npos)
         return KRA_IMP_GRAYA_COLOR_SPACE_MODEL;
-    if (string.find("RGBA") != std::string::npos)
+    if (string.find(RGBA_MODEL) != std::string::npos)
         return KRA_IMP_RGBA_COLOR_SPACE_MODEL;
-    if (string.find("XYZA") != std::string::npos)
+    if (string.find(XYZA_MODEL) != std::string::npos)
         return KRA_IMP_XYZA_COLOR_SPACE_MODEL;
-    if (string.find("YCBCRA") != std::string::npos)
+    if (string.find(YCBCRA_MODEL) != std::string::npos)
         return KRA_IMP_YCBCR_COLOR_SPACE_MODEL;
 
     return KRA_IMP_UNKNOWN_COLOR_SPACE_MODEL;
