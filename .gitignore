@@ -31,6 +31,8 @@
 *.out
 *.app
 
-# Diractories
+# Directories
 /build/
+/out/
+/.vs/
 /.vscode/
