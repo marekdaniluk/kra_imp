@@ -22,6 +22,32 @@ extern "C"
     /**
      * @ingroup kra_imp
      *
+     * @brief Function pointer type for custom memory allocation.
+     *
+     * @details
+     * This typedef defines the signature for a memory allocation function used by the kra_imp library.
+     * The function should allocate a memory block of the specified size and return a pointer to it.
+     * The returned pointer must be compatible with the corresponding deallocation function.
+     *
+     * @param size The number of bytes to allocate.
+     * @return Pointer to the allocated memory block, or nullptr if allocation fails.
+     */
+    typedef void* (*kra_imp_allocation_function)(size_t size);
+    /**
+     * @ingroup kra_imp
+     *
+     * @brief Function pointer type for custom memory deallocation.
+     *
+     * @details
+     * This typedef defines the signature for a memory deallocation function used by the kra_imp library.
+     * The function should free a memory block previously allocated by the corresponding allocation function.
+     *
+     * @param ptr Pointer to the memory block to free.
+     */
+    typedef void (*kra_imp_deallocation_function)(void* ptr);
+    /**
+     * @ingroup kra_imp
+     *
      * @brief Defines error codes used throughout the kra_imp API.
      *
      * @details

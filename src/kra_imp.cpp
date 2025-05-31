@@ -112,6 +112,11 @@ KRA_IMP_API unsigned int kra_imp_get_version()
     return KRA_IMP_VERSION;
 }
 
+KRA_IMP_API void kra_imp_set_memory_functions(kra_imp_allocation_function allocation_function, kra_imp_deallocation_function deallocation_function)
+{
+    pugi::set_memory_management_functions(allocation_function, deallocation_function);
+}
+
 KRA_IMP_API kra_imp_archive_t* kra_imp_open_archive(const char* archive_buffer, const unsigned long long archive_buffer_size)
 {
     if (archive_buffer == nullptr || archive_buffer_size == 0ULL)
