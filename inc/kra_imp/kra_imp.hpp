@@ -35,6 +35,20 @@ extern "C"
     /**
      * @ingroup kra_imp
      *
+     * @brief Sets custom memory allocation and deallocation functions for kra_imp's xml parsing.
+     *
+     * @details
+     * This function allows the user to provide custom memory allocation and deallocation
+     * functions that will be used by the kra_imp library for xml parsing dynamic memory operations.
+     * This setting is global and affects all subsequent allocations performed by the library.
+     *
+     * @param[in] allocation_function   Pointer to a function that allocates memory (like malloc).
+     * @param[in] deallocation_function Pointer to a function that deallocates memory (like free).
+     */
+    KRA_IMP_API void kra_imp_set_memory_functions(kra_imp_allocation_function allocation_function, kra_imp_deallocation_function deallocation_function);
+    /**
+     * @ingroup kra_imp
+     *
      * @brief Opens a KRA archive from a memory buffer.
      *
      * @details
