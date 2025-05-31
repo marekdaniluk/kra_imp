@@ -271,7 +271,7 @@ extern "C"
      * This function transforms a linear color representation in the input buffer to BGRA format in the output buffer.
      * It supports offsets and different input/output widths for flexible processing while maintaining the original image dimensions.
      *
-     * @deprecated This function is deprecated. Use `kra_imp_delinearize` instead.
+     * @deprecated This function is deprecated. Use `kra_imp_delinearize_with_offset` instead.
      *
      * @param[in] input Linear color buffer to convert.
      * @param[in] input_size Size of the input buffer in bytes.

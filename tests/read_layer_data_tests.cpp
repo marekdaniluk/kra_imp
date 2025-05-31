@@ -102,7 +102,7 @@ constexpr const std::array<unsigned char, 1237> INVALID_COMPRESSED_LAYER_DATA = 
 
 constexpr const std::string_view EMPTY_LAYER_DATA = "";
 
-TEST_CASE("kra_imp_read_layer_data_header success", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile success", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     int x_offset, y_offset;
@@ -113,7 +113,7 @@ TEST_CASE("kra_imp_read_layer_data_header success", "[layer_data_tile]")
     REQUIRE(y_offset == 0);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header success second index", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile success second index", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     int x_offset, y_offset;
@@ -124,7 +124,7 @@ TEST_CASE("kra_imp_read_layer_data_header success second index", "[layer_data_ti
     REQUIRE(y_offset == 64);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header null input buffer", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile null input buffer", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     int x_offset, y_offset;
@@ -132,7 +132,7 @@ TEST_CASE("kra_imp_read_layer_data_header null input buffer", "[layer_data_tile]
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header null output", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile null output", "[layer_data_tile]")
 {
     int x_offset, y_offset;
     const kra_imp_error_code_e result =
@@ -140,7 +140,7 @@ TEST_CASE("kra_imp_read_layer_data_header null output", "[layer_data_tile]")
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header null x_offset/y_offset", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile null x_offset/y_offset", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     const kra_imp_error_code_e result = kra_imp_read_layer_data_tile(reinterpret_cast<const char*>(VALID_LAYER_DATA.data()), VALID_LAYER_DATA.size(), 0U, output_buffer.data(),
@@ -148,7 +148,7 @@ TEST_CASE("kra_imp_read_layer_data_header null x_offset/y_offset", "[layer_data_
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header buffer_size=0", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile buffer_size=0", "[layer_data_tile]")
 {
     std::array<char, 1> output_buffer;
     int x_offset, y_offset;
@@ -156,7 +156,7 @@ TEST_CASE("kra_imp_read_layer_data_header buffer_size=0", "[layer_data_tile]")
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header empty input buffer", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile empty input buffer", "[layer_data_tile]")
 {
     std::array<char, 1> output_buffer;
     int x_offset, y_offset;
@@ -165,7 +165,7 @@ TEST_CASE("kra_imp_read_layer_data_header empty input buffer", "[layer_data_tile
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header empty output buffer", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile empty output buffer", "[layer_data_tile]")
 {
     std::array<char, 0> output_buffer;
     int x_offset, y_offset;
@@ -174,7 +174,7 @@ TEST_CASE("kra_imp_read_layer_data_header empty output buffer", "[layer_data_til
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header invalid layer index", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile invalid layer index", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     int x_offset, y_offset;
@@ -183,7 +183,7 @@ TEST_CASE("kra_imp_read_layer_data_header invalid layer index", "[layer_data_til
     REQUIRE(result == KRA_IMP_PARSE_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header invalid layer data", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile invalid layer data", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     int x_offset, y_offset;
@@ -192,7 +192,7 @@ TEST_CASE("kra_imp_read_layer_data_header invalid layer data", "[layer_data_tile
     REQUIRE(result == KRA_IMP_DECOMPRESS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header invalid layer compressed data", "[layer_data_tile]")
+TEST_CASE("kra_imp_read_layer_data_tile invalid layer compressed data", "[layer_data_tile]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     int x_offset, y_offset;
@@ -201,7 +201,7 @@ TEST_CASE("kra_imp_read_layer_data_header invalid layer compressed data", "[laye
     REQUIRE(result == KRA_IMP_DECOMPRESS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header success", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data success", "[layer_data]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -213,7 +213,7 @@ TEST_CASE("kra_imp_read_layer_data_header success", "[layer_data]")
     REQUIRE(output_data._y_offset == 0);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header success second index", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data success second index", "[layer_data]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -225,7 +225,7 @@ TEST_CASE("kra_imp_read_layer_data_header success second index", "[layer_data]")
     REQUIRE(output_data._y_offset == 64);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header null input buffer", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data null input buffer", "[layer_data]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -235,14 +235,14 @@ TEST_CASE("kra_imp_read_layer_data_header null input buffer", "[layer_data]")
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header null output", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data null output", "[layer_data]")
 {
     kra_imp_layer_output_data_t output_data{};
     const kra_imp_error_code_e result = kra_imp_read_layer_data(reinterpret_cast<const char*>(VALID_LAYER_DATA.data()), VALID_LAYER_DATA.size(), 0U, &output_data);
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header buffer_size=0", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data buffer_size=0", "[layer_data]")
 {
     std::array<char, 1> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -252,7 +252,7 @@ TEST_CASE("kra_imp_read_layer_data_header buffer_size=0", "[layer_data]")
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header empty input buffer", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data empty input buffer", "[layer_data]")
 {
     std::array<char, 1> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -262,7 +262,7 @@ TEST_CASE("kra_imp_read_layer_data_header empty input buffer", "[layer_data]")
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header empty output buffer", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data empty output buffer", "[layer_data]")
 {
     std::array<char, 0> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -272,7 +272,7 @@ TEST_CASE("kra_imp_read_layer_data_header empty output buffer", "[layer_data]")
     REQUIRE(result == KRA_IMP_PARAMS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header invalid layer index", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data invalid layer index", "[layer_data]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -282,7 +282,7 @@ TEST_CASE("kra_imp_read_layer_data_header invalid layer index", "[layer_data]")
     REQUIRE(result == KRA_IMP_PARSE_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header invalid layer data", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data invalid layer data", "[layer_data]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     kra_imp_layer_output_data_t output_data{};
@@ -293,7 +293,7 @@ TEST_CASE("kra_imp_read_layer_data_header invalid layer data", "[layer_data]")
     REQUIRE(result == KRA_IMP_DECOMPRESS_ERROR);
 }
 
-TEST_CASE("kra_imp_read_layer_data_header invalid layer compressed data", "[layer_data]")
+TEST_CASE("kra_imp_read_layer_data invalid layer compressed data", "[layer_data]")
 {
     std::array<char, 64 * 64 * 4> output_buffer;
     kra_imp_layer_output_data_t output_data{};
