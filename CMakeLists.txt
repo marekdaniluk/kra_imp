@@ -17,6 +17,10 @@ if(NOT zip_FOUND)
 	add_subdirectory(zip)
 endif()
 
+if (TARGET zip)
+	target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>
+endif()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
 	${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
 	@ONLY
