@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.28)
 
-project (kra_imp VERSION 0.2.0 LANGUAGES C CXX)
+project (kra_imp VERSION 0.2.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,6 +15,10 @@ endif()
 find_package(zip QUIET)
 if(NOT zip_FOUND)
 	add_subdirectory(zip)
+endif()
+
+if (TARGET zip)
+	target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
