@@ -18,7 +18,7 @@ if(NOT zip_FOUND)
 endif()
 
 if (TARGET zip)
-	target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>
+	target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
