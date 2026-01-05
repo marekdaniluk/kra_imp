@@ -7,19 +7,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(pugixml QUIET)
+include(CTest)
+include(FetchContent)
+
+find_package(pugixml 1.15 CONFIG QUIET)
 if(NOT pugixml_FOUND)
-	add_subdirectory(pugixml)
+	FetchContent_Declare(pugixml
+		GIT_REPOSITORY	https://github.com/zeux/pugixml.git
+		GIT_TAG			v1.15
+	)
+	FetchContent_MakeAvailable(pugixml)
 endif()
 
-find_package(zip QUIET)
+find_package(zip 0.3.5 CONFIG QUIET)
 if(NOT zip_FOUND)
-	add_subdirectory(zip)
+	FetchContent_Declare(zip
+		GIT_REPOSITORY	https://github.com/kuba--/zip.git
+		GIT_TAG			v0.3.5
+	)
+	FetchContent_MakeAvailable(zip)
 endif()
-
-if (TARGET zip)
-	target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>)
-endif()
+target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
 	${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
@@ -109,7 +117,6 @@ install(FILES
 
 if (BUILD_TESTING)
 	enable_testing()
-	add_subdirectory(Catch2)
 	add_subdirectory(tests)
 endif()
 

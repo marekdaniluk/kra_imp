@@ -1,9 +1,0 @@
-[submodule "pugixml"]
-	path = pugixml
-	url = https://github.com/zeux/pugixml.git
-[submodule "zip"]
-	path = zip
-	url = https://github.com/kuba--/zip.git
-[submodule "Catch2"]
-	path = Catch2
-	url = https://github.com/catchorg/Catch2.git
