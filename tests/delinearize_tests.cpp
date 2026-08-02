@@ -1,6 +1,6 @@
 #include <array>
 #include <catch2/catch_test_macros.hpp>
-#include <kra_imp/kra_imp.hpp>
+#include <kra_imp/kra_imp.h>
 
 TEST_CASE("kra_imp_delinearize_to_bgra null input buffer", "[delinearize_to_bgra]")
 {

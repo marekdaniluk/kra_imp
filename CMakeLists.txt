@@ -48,8 +48,8 @@ foreach(target kra_imp_shared kra_imp_static)
 		src/lzf/lzfP.h
 		src/lzf/lzf.h
 		PRIVATE
-		inc/kra_imp/kra_imp.hpp
-		inc/kra_imp/types.hpp
+		inc/kra_imp/kra_imp.h
+		inc/kra_imp/types.h
 		${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
 	)
 

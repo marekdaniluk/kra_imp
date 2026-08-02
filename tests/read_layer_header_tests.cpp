@@ -6,7 +6,7 @@
  */
 #include <array>
 #include <catch2/catch_test_macros.hpp>
-#include <kra_imp/kra_imp.hpp>
+#include <kra_imp/kra_imp.h>
 
 constexpr const std::string_view EMPTY_LAYER_DATA = "";
 constexpr const std::string_view ONLY_HEADER_LAYER_DATA = "VERSION 2\nTILEWIDTH 64\nTILEHEIGHT 64\nPIXELSIZE 4\nDATA 0\n";

@@ -6,7 +6,7 @@
  */
 #pragma once
 #include <kra_imp/config.hpp>
-#include <kra_imp/types.hpp>
+#include <kra_imp/types.h>
 /**
  * @mainpage
  *

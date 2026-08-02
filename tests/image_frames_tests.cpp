@@ -5,7 +5,7 @@
  * This library is distributed under the MIT License.
  */
 #include <catch2/catch_test_macros.hpp>
-#include <kra_imp/kra_imp.hpp>
+#include <kra_imp/kra_imp.h>
 
 constexpr const std::string_view EMPTY_XML = "";
 

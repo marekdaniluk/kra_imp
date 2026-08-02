@@ -4,7 +4,7 @@
  * Copyright (C) 2024, by Marek Daniluk (@GypsyMagic)
  * This library is distributed under the MIT License.
  */
-#include "kra_imp/kra_imp.hpp"
+#include "kra_imp/kra_imp.h"
 #include "lzf/lzf.h"
 #include <array>
 #include <charconv>
