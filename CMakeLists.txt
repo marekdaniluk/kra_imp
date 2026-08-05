@@ -1,9 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.28)
 
-project (kra_imp VERSION 0.2.1 LANGUAGES C CXX)
+project (kra_imp VERSION 1.0.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -43,11 +41,23 @@ foreach(target kra_imp_shared kra_imp_static)
 	target_sources(${target}
 		PRIVATE
 		src/kra_imp.cpp
+		src/Importer.cpp
+		src/Types.cpp
+		src/XmlParser.cpp
+		src/ZipArchive.cpp
 		src/lzf/lzf_d.c
 		src/lzf/lzf_c.c
 		src/lzf/lzfP.h
 		src/lzf/lzf.h
-		PRIVATE
+		src/MainDocParser/MainDocParser.cpp
+		src/MainDocParser/MainDocParser.hpp
+		inc/kra_imp/IArchive.hpp
+		inc/kra_imp/Importer.hpp
+		inc/kra_imp/IXmlNode.hpp
+		inc/kra_imp/IXmlParser.hpp
+		inc/kra_imp/Types.hpp
+		inc/kra_imp/XmlParser.hpp
+		inc/kra_imp/ZipArchive.hpp
 		inc/kra_imp/kra_imp.h
 		inc/kra_imp/types.h
 		${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
@@ -64,6 +74,16 @@ foreach(target kra_imp_shared kra_imp_static)
 		PRIVATE
 		pugixml::pugixml
 		zip::zip
+	)
+
+	target_compile_features(${target}
+		PUBLIC
+		cxx_std_20
+	)
+
+	set_target_properties(${target}
+		PROPERTIES
+		CXX_EXTENSIONS OFF
 	)
 endforeach()
 

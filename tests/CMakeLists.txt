@@ -12,6 +12,7 @@ endif()
 add_executable(kra_imp_test
     test.cpp
     archive_tests.cpp
+    cpp_importer_tests.cpp
     delinearize_tests.cpp
     image_frames_tests.cpp
     image_layer_tests.cpp
