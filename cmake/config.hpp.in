@@ -6,22 +6,6 @@
  */
 #pragma once
 
-#ifndef KRA_IMP_STATIC
-#    ifdef _WIN32
-#        ifdef kra_imp_EXPORTS
-#            define KRA_IMP_API __declspec(dllexport)
-#        else
-#            define KRA_IMP_API __declspec(dllimport)
-#        endif
-#    elif __GNUC__ >= 4
-#        define KRA_IMP_API __attribute__((visibility("default")))
-#    else
-#        define KRA_IMP_API
-#    endif
-#else
-#    define KRA_IMP_API
-#endif
-
 #define KRA_IMP_MAJOR @PROJECT_VERSION_MAJOR@
 #define KRA_IMP_MINOR @PROJECT_VERSION_MINOR@
 #define KRA_IMP_PATCH @PROJECT_VERSION_PATCH@

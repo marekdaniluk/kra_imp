@@ -5,7 +5,7 @@
  * This library is distributed under the MIT License.
  */
 #pragma once
-#include <kra_imp/config.hpp>
+#include <kra_imp/export.h>
 #include <kra_imp/types.h>
 /**
  * @mainpage
@@ -31,7 +31,7 @@ extern "C"
      *
      * @return Combined version as a single shifted integer.
      */
-    KRA_IMP_API unsigned int kra_imp_get_version();
+    KRA_IMP_API kra_imp_error_code_e kra_imp_get_version(unsigned int* out_version);
     /**
      * @ingroup kra_imp
      *
@@ -45,7 +45,7 @@ extern "C"
      * @param[in] allocation_function   Pointer to a function that allocates memory (like malloc).
      * @param[in] deallocation_function Pointer to a function that deallocates memory (like free).
      */
-    KRA_IMP_API void kra_imp_set_memory_functions(kra_imp_allocation_function allocation_function, kra_imp_deallocation_function deallocation_function);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_set_memory_functions(kra_imp_allocation_function allocation_function, kra_imp_deallocation_function deallocation_function);
     /**
      * @ingroup kra_imp
      *
@@ -60,7 +60,7 @@ extern "C"
      *
      * @return Pointer to the opened KRA archive on success, or nullptr on failure.
      */
-    KRA_IMP_API kra_imp_archive_t* kra_imp_open_archive(const char* archive_buffer, const unsigned long long archive_buffer_size);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_open_archive(const char* archive_buffer, const unsigned long long archive_buffer_size, kra_imp_archive_t** out_archive);
     /**
      * @ingroup kra_imp
      *
@@ -68,7 +68,7 @@ extern "C"
      *
      * @param[in] archive Pointer to the archive to close.
      */
-    KRA_IMP_API void kra_imp_close_archive(kra_imp_archive_t* archive);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_close_archive(kra_imp_archive_t* archive);
     /**
      * @ingroup kra_imp
      *
@@ -82,7 +82,7 @@ extern "C"
      *
      * @return Size of the file in bytes on success, or 0 on failure.
      */
-    KRA_IMP_API unsigned long long kra_imp_get_file_size(kra_imp_archive_t* archive, const char* file_path);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_get_file_size(kra_imp_archive_t* archive, const char* file_path, unsigned long long* out_file_size);
     /**
      * @ingroup kra_imp
      *
@@ -98,7 +98,8 @@ extern "C"
      *
      * @return Number of bytes read on success (should match file size). Returns 0 on failure.
      */
-    KRA_IMP_API unsigned long long kra_imp_load_file(kra_imp_archive_t* archive, const char* file_path, char* file_buffer, const unsigned long long file_buffer_size);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_load_file(kra_imp_archive_t* archive, const char* file_path, char* file_buffer, const unsigned long long file_buffer_size,
+                                                       unsigned long long* out_read_bytes);
     /**
      * @ingroup kra_imp
      *
@@ -109,7 +110,7 @@ extern "C"
      *
      * @return Name of the main document file as a string.
      */
-    KRA_IMP_API const char* kra_imp_get_main_doc_file_name();
+    KRA_IMP_API kra_imp_error_code_e kra_imp_get_main_doc_file_name(const char** out_main_doc_file_name);
     /**
      * @ingroup kra_imp
      *
@@ -127,7 +128,7 @@ extern "C"
      * provides the directory name, which must be combined with the image name and filename
      * to create the complete path.
      */
-    KRA_IMP_API const char* kra_imp_get_layer_directory_name();
+    KRA_IMP_API kra_imp_error_code_e kra_imp_get_layer_directory_name(const char** out_layer_directory_name);
     /**
      * @ingroup kra_imp
      *
@@ -179,7 +180,8 @@ extern "C"
      *
      * @return The number of key frames on success, or 0 if no key frames are available or on failure.
      */
-    KRA_IMP_API unsigned int kra_imp_get_image_key_frames_count(const char* xml_buffer, const unsigned long long xml_buffer_size);
+    KRA_IMP_API kra_imp_error_code_e kra_imp_get_image_key_frames_count(const char* xml_buffer, const unsigned long long xml_buffer_size,
+                                                                        unsigned int* out_key_frames_count);
     /**
      * @ingroup kra_imp
      *

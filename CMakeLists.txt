@@ -28,7 +28,7 @@ endif()
 target_compile_options(zip PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-error=calloc-transposed-args>)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.hpp.in
-	${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp
 	@ONLY
 )
 
@@ -51,6 +51,7 @@ foreach(target kra_imp_shared kra_imp_static)
 		src/lzf/lzf.h
 		src/MainDocParser/MainDocParser.cpp
 		src/MainDocParser/MainDocParser.hpp
+		src/config.hpp
 		inc/kra_imp/IArchive.hpp
 		inc/kra_imp/Importer.hpp
 		inc/kra_imp/IXmlNode.hpp
@@ -58,15 +59,15 @@ foreach(target kra_imp_shared kra_imp_static)
 		inc/kra_imp/Types.hpp
 		inc/kra_imp/XmlParser.hpp
 		inc/kra_imp/ZipArchive.hpp
+		inc/kra_imp/export.h
 		inc/kra_imp/kra_imp.h
+		inc/kra_imp/kra_imp.hpp
 		inc/kra_imp/types.h
-		${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp/config.hpp
 	)
 
 	target_include_directories(${target}
 		PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>
 		$<INSTALL_INTERFACE:include>
 	)
 	
@@ -100,7 +101,6 @@ set_property(TARGET kra_imp_shared PROPERTY EXPORT_NAME shared)
 set_property(TARGET kra_imp_static PROPERTY EXPORT_NAME static)
 
 install(DIRECTORY inc/kra_imp DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated/kra_imp DESTINATION include)
 install(TARGETS
 	kra_imp_shared kra_imp_static
     EXPORT kra_impTargets

@@ -5,7 +5,7 @@
  * This library is distributed under the MIT License.
  */                                                                                                                                                                                \
 #pragma once
-#include <kra_imp/config.hpp>
+#include <kra_imp/export.h>
 #include <span>
 #include <string_view>
 #include <system_error>

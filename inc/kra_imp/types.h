@@ -5,7 +5,7 @@
  * This library is distributed under the MIT License.
  */
 #pragma once
-#include <kra_imp/config.hpp>
+#include <kra_imp/export.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -60,11 +60,15 @@ extern "C"
      */
     typedef enum kra_imp_error_code_e
     {
-        KRA_IMP_FAIL = 0,              /**< Indicates the generic operation failed. */
-        KRA_IMP_SUCCESS = 1,           /**< Indicates that the operation completed successfully. */
-        KRA_IMP_PARAMS_ERROR = -1,     /**< Indicates operation failed due the invalid param(s). */
-        KRA_IMP_PARSE_ERROR = -2,      /**< Indicates that the parse operation failed. */
-        KRA_IMP_DECOMPRESS_ERROR = -3, /**< Indicates that the decompress operation failed. */
+        KRA_IMP_FAIL = 0,               /**< Indicates the generic operation failed. */
+        KRA_IMP_SUCCESS = 1,            /**< Indicates that the operation completed successfully. */
+        KRA_IMP_PARAMS_ERROR = -1,      /**< Indicates operation failed due the invalid param(s). */
+        KRA_IMP_PARSE_ERROR = -2,       /**< Indicates that the parse operation failed. */
+        KRA_IMP_DECOMPRESS_ERROR = -3,  /**< Indicates that the decompress operation failed. */
+        KRA_IMP_NOT_FOUND = -4,         /**< Indicates that requested resource was not found. */
+        KRA_IMP_BUFFER_TOO_SMALL = -5,  /**< Indicates output buffer is too small for requested operation. */
+        KRA_IMP_INVALID_XML = -6,       /**< Indicates input XML is invalid or malformed. */
+        KRA_IMP_INTERNAL_ERROR = -7,    /**< Indicates unexpected internal error. */
     } kra_imp_error_code_e;
     /**
      * @ingroup kra_imp
@@ -214,7 +218,6 @@ extern "C"
         int _x;                                 /**< Horizontal position of the keyframe in the image's coordinate space. */
         int _y;                                 /**< Vertical position of the keyframe in the image's coordinate space. */
         unsigned int _time;                     /**< Time of the keyframe in the animation timeline, in milliseconds. */
-        unsigned int _key_frames_count;         /**< Total number of keyframes in the animation. */
     };
     typedef struct kra_imp_image_key_frame_t kra_imp_image_key_frame_t;
     /**
